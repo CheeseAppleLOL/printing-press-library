@@ -2094,9 +2094,9 @@
       "path": "library/other/ars-sicilia",
       "release": {
         "cli_name": "ars-sicilia-pp-cli",
-        "version": "2026.9.4",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.5",
+        "released_at": "2026-09-13T09:15:33Z",
+        "source_commit": "f4d158779a84d644d0bad1e48df81282fb34f72a"
       },
       "printer": "aborruso",
       "printer_name": "aborruso",
@@ -18796,9 +18796,9 @@
       "path": "library/health/peloton",
       "release": {
         "cli_name": "peloton-pp-cli",
-        "version": "2026.9.8",
-        "released_at": "2026-09-12T09:34:09Z",
-        "source_commit": "d3d730d86c50f33a1ecda15890e7bccd172feb14"
+        "version": "2026.9.9",
+        "released_at": "2026-09-13T09:15:33Z",
+        "source_commit": "708f5c5ee64594b845b4378516c112ae6a6a16cc"
       },
       "printer": "itsmefelix-",
       "printer_name": "Felix Banuchi",
@@ -25344,6 +25344,51 @@
         ],
         "mcp_ready": "full",
         "spec_format": "openapi3"
+      }
+    },
+    {
+      "name": "swiggy",
+      "category": "food-and-dining",
+      "api": "Swiggy",
+      "description": "Every Swiggy Builders Club tool, one persistent OAuth session, and a local order history no Swiggy surface shows you.",
+      "search_terms": [
+        "swiggy",
+        "swiggy-pp-cli",
+        "Every Swiggy Builders Club tool, one persistent OAuth session, and a local order history no Swiggy surface shows you.",
+        "Cross-domain spend/order history",
+        "history",
+        "See total spend and order counts across Food and Instamart in one view, even though Swiggy keeps them completely separate. Dineout has no orders-list tool and is not included.",
+        "Unified UPI payment wait",
+        "pay wait",
+        "Block until a UPI payment resolves instead of hand-rolling a polling loop yourself. Not for COD orders — check payment status once and proceed instead.",
+        "Safe retry after failed order placement",
+        "order verify-before-retry",
+        "Check whether a food or grocery order actually went through before retrying a failed placement.",
+        "Auth/session health check",
+        "status",
+        "See at a glance whether your Swiggy login is still valid and which domain sessions are active."
+      ],
+      "path": "library/food-and-dining/swiggy",
+      "printer": "SomSamantray",
+      "printer_name": "Som Samantray",
+      "creator": {
+        "handle": "SomSamantray",
+        "name": "Som Samantray"
+      },
+      "mcp": {
+        "binary": "swiggy-pp-mcp",
+        "transports": [
+          "stdio",
+          "http"
+        ],
+        "tool_count": 51,
+        "public_tool_count": 0,
+        "auth_type": "oauth2",
+        "env_vars": [
+          "SWIGGY_ACCESS_TOKEN"
+        ],
+        "mcp_ready": "full",
+        "spec_format": "internal"
       }
     },
     {
