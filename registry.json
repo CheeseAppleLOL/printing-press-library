@@ -4693,9 +4693,9 @@
       "path": "library/health/clinical-trials",
       "release": {
         "cli_name": "clinical-trials-pp-cli",
-        "version": "2026.9.6",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.7",
+        "released_at": "2026-09-13T09:12:20Z",
+        "source_commit": "feed82f71e80ec555a7bc621a96a448e9561bb86"
       },
       "printer": "laci141",
       "printer_name": "laci141",
@@ -18796,9 +18796,9 @@
       "path": "library/health/peloton",
       "release": {
         "cli_name": "peloton-pp-cli",
-        "version": "2026.9.6",
-        "released_at": "2026-09-12T09:15:15Z",
-        "source_commit": "1034d6f7e7373ca1ce3f3dad30d086a62be4842e"
+        "version": "2026.9.8",
+        "released_at": "2026-09-12T09:34:09Z",
+        "source_commit": "d3d730d86c50f33a1ecda15890e7bccd172feb14"
       },
       "printer": "itsmefelix-",
       "printer_name": "Felix Banuchi",
