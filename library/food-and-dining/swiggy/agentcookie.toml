@@ -1,0 +1,16 @@
+# agentcookie.toml: secrets-bus adoption manifest v2
+# See docs/spec-agentcookie-secrets-bus-v2-adoption.md
+schema_version = 2
+name = "swiggy-pp-cli"
+display_name = "Swiggy"
+description = "Every Swiggy Builders Club tool, one persistent OAuth session, and a local order history no Swiggy surface shows you."
+project_kind = "cli"
+
+[secrets.file]
+path = "~/.config/swiggy-pp-cli/config.toml"
+
+[sync]
+default = false
+
+[sync.keys]
+SWIGGY_ACCESS_TOKEN = true

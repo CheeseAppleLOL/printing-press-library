@@ -1,0 +1,1678 @@
+{
+  "api_name": "swiggy",
+  "base_url": "https://mcp.swiggy.com",
+  "description": "Every Swiggy Builders Club tool, one persistent OAuth session, and a local order history no Swiggy surface shows you.",
+  "mcp_ready": "full",
+  "http_transport": "standard",
+  "mcp": {
+    "endpoint_tools": "hidden",
+    "orchestration": "code"
+  },
+  "auth": {
+    "type": "oauth2",
+    "header": "Authorization",
+    "format": "Bearer {SWIGGY_ACCESS_TOKEN}",
+    "env_vars": [
+      "SWIGGY_ACCESS_TOKEN"
+    ],
+    "env_var_specs": [
+      {
+        "name": "SWIGGY_ACCESS_TOKEN",
+        "kind": "per_call",
+        "required": true,
+        "sensitive": true,
+        "inferred": true
+      }
+    ]
+  },
+  "required_headers": [],
+  "tools": [
+    {
+      "name": "dineout_book_table",
+      "description": "Swiggy Dineout (Reservations): Book a table at a restaurant for a specific time slot. Required: restaurantId, slotId, itemId, reservationTime, guestCount, latitude, longitude. Optional: paymentMethod, cartKey, intentApp (plus 1 more).",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "restaurantId",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant ID",
+          "required": true
+        },
+        {
+          "name": "slotId",
+          "type": "float",
+          "location": "body",
+          "description": "Slot ID from selected slot (slot.deals[].slotId)",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "location": "body",
+          "description": "Deal/ticket item ID (slot.deals[].itemId, format: 'restaurantId-ticketId')",
+          "required": true
+        },
+        {
+          "name": "reservationTime",
+          "type": "float",
+          "location": "body",
+          "description": "Unix timestamp from selected slot (slot.reservationTime)",
+          "required": true
+        },
+        {
+          "name": "guestCount",
+          "type": "float",
+          "location": "body",
+          "description": "Number of guests (1-20)",
+          "required": true
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude from user address",
+          "required": true
+        },
+        {
+          "name": "longitude",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude from user address",
+          "required": true
+        },
+        {
+          "name": "paymentMethod",
+          "type": "string",
+          "location": "body",
+          "description": "Omit (or 'Cash') for FREE reservations. Use 'UPI' for paid prebook deals (also pass cartKey + intentApp)."
+        },
+        {
+          "name": "cartKey",
+          "type": "string",
+          "location": "body",
+          "description": "Paid UPI prebook only: cartKey returned by create_cart (DEAL_TICKET_PURCHASE)."
+        },
+        {
+          "name": "intentApp",
+          "type": "string",
+          "location": "body",
+          "description": "Paid UPI prebook only: the UPI app id chosen from get_payment_options. Omit when generateUPIQR=true."
+        },
+        {
+          "name": "generateUPIQR",
+          "type": "bool",
+          "location": "body",
+          "description": "Paid UPI prebook on desktop: true for a scannable QR instead of an app intent."
+        }
+      ]
+    },
+    {
+      "name": "dineout_cancel_booking",
+      "description": "Swiggy Dineout (Reservations): Cancel an existing table reservation by orderId. Required: orderId. Optional: cancellationReason.",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "The order ID of the booking to cancel (from book_table response).",
+          "required": true
+        },
+        {
+          "name": "cancellationReason",
+          "type": "string",
+          "location": "body",
+          "description": "Optional short reason for cancellation (e.g., 'plan changed', 'wrong restaurant'). Not shown to the user."
+        }
+      ]
+    },
+    {
+      "name": "dineout_check_payment_status",
+      "description": "Check one payment-status iteration for an in-flight UPI payment. Required: paasId. Optional: orderId, addressId, cartId (plus 2 more).",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "paasId",
+          "type": "string",
+          "location": "body",
+          "description": "The payment TRANSACTION id from the place-order/checkout response (response field 'paasId', e.",
+          "required": true
+        },
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID from the place-order or checkout response."
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "cartId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "lat",
+          "type": "float",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "lng",
+          "type": "float",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        }
+      ]
+    },
+    {
+      "name": "dineout_confirm_order",
+      "description": "Complete an order after payment succeeds. Required: orderId, paasId. Optional: transactionId, addressId, cartId (plus 2 more).",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID returned by the place-order tool.",
+          "required": true
+        },
+        {
+          "name": "transactionId",
+          "type": "string",
+          "location": "body",
+          "description": "Transaction ID returned by the place-order tool (IM/Dineout only)."
+        },
+        {
+          "name": "paasId",
+          "type": "string",
+          "location": "body",
+          "description": "Payment transaction ID returned by the place-order tool (IM/Dineout only).",
+          "required": true
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only; not used by Dineout confirmation."
+        },
+        {
+          "name": "cartId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only; not used by Dineout confirmation."
+        },
+        {
+          "name": "lat",
+          "type": "float",
+          "location": "body",
+          "description": "Food only; not used by Dineout confirmation."
+        },
+        {
+          "name": "lng",
+          "type": "float",
+          "location": "body",
+          "description": "Food only; not used by Dineout confirmation."
+        }
+      ]
+    },
+    {
+      "name": "dineout_create_cart",
+      "description": "Swiggy Dineout (Reservations): Create a booking cart. Required: restaurantId, cartType, latitude, longitude, slotId, itemId, reservationTime, guestCount, billAmount. Optional: source.",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "restaurantId",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant ID",
+          "required": true
+        },
+        {
+          "name": "cartType",
+          "type": "string",
+          "location": "body",
+          "description": "Cart type: DEAL_TICKET_PURCHASE for booking, DINEOUT for bill payment",
+          "required": true
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude",
+          "required": true
+        },
+        {
+          "name": "longitude",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude",
+          "required": true
+        },
+        {
+          "name": "slotId",
+          "type": "float",
+          "location": "body",
+          "description": "Slot ID (required for booking cart)",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "location": "body",
+          "description": "Item ID (required for booking cart, format: 'restaurantId-ticketId')",
+          "required": true
+        },
+        {
+          "name": "reservationTime",
+          "type": "float",
+          "location": "body",
+          "description": "Unix timestamp (required for booking cart)",
+          "required": true
+        },
+        {
+          "name": "guestCount",
+          "type": "float",
+          "location": "body",
+          "description": "Number of guests (required for booking cart, 1-20)",
+          "required": true
+        },
+        {
+          "name": "billAmount",
+          "type": "float",
+          "location": "body",
+          "description": "Bill amount in rupees (required for bill payment cart)",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "location": "body",
+          "description": "Source for bill payment cart (default: 'direct-payment-cart')"
+        }
+      ]
+    },
+    {
+      "name": "dineout_get_available_slots",
+      "description": "Swiggy Dineout (Reservations): Check available time slots for TABLE BOOKING at a restaurant. Required: restaurantId, date, latitude, longitude.",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "restaurantId",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant ID from search or details",
+          "required": true
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "location": "body",
+          "description": "Starting date as YYYY-MM-DD string (e.g., '2026-04-20') or epoch timestamp as numeric string (e.g., '1735689600'). Returns slots for up to 7 days from this date.",
+          "required": true
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "location": "body",
+          "description": "User's latitude",
+          "required": true
+        },
+        {
+          "name": "longitude",
+          "type": "float",
+          "location": "body",
+          "description": "User's longitude",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "dineout_get_booking_status",
+      "description": "Swiggy Dineout (Reservations): Get booking status and details for a dineout reservation. Required: orderId.",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID from booking confirmation",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "dineout_get_payment_options",
+      "description": "Fetch the live payment methods currently available for the cart. Optional: addressId.",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: pass the same addressId you used for get_food_cart."
+        }
+      ]
+    },
+    {
+      "name": "dineout_get_restaurant_details",
+      "description": "Swiggy Dineout (Reservations): Get details about a specific restaurant for TABLE BOOKING. Required: restaurantId, latitude, longitude.",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "restaurantId",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant ID from search results",
+          "required": true
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude (use same as search)",
+          "required": true
+        },
+        {
+          "name": "longitude",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude (use same as search)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "dineout_get_saved_locations",
+      "description": "Swiggy Dineout (Reservations): Get user's saved addresses for restaurant search.",
+      "method": "POST",
+      "path": "/dineout",
+      "params": []
+    },
+    {
+      "name": "dineout_report_error",
+      "description": "Generate an error report to share with the Swiggy MCP team. Required: tool, errorMessage. Optional: domain, flowDescription, toolContext (plus 1 more).",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "tool",
+          "type": "string",
+          "location": "body",
+          "description": "Name of the tool that errored (e.g., 'checkout', 'search_products', 'place_food_order')",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "location": "body",
+          "description": "MCP server name where the error occurred (e."
+        },
+        {
+          "name": "errorMessage",
+          "type": "string",
+          "location": "body",
+          "description": "The error message the user saw",
+          "required": true
+        },
+        {
+          "name": "flowDescription",
+          "type": "string",
+          "location": "body",
+          "description": "Brief description of what the user was doing (e."
+        },
+        {
+          "name": "toolContext",
+          "type": "string",
+          "location": "body",
+          "description": "Key-value pairs of identifiers from the failed tool call."
+        },
+        {
+          "name": "userNotes",
+          "type": "string",
+          "location": "body",
+          "description": "Any additional notes or context the user wants to share"
+        }
+      ]
+    },
+    {
+      "name": "dineout_search_restaurants_dineout",
+      "description": "Swiggy Dineout (Reservations): find restaurants to BOOK A TABLE at. Required: query. Optional: entityType, addressId, latitude (plus 3 more).",
+      "method": "POST",
+      "path": "/dineout",
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "location": "body",
+          "description": "What to search for: a restaurant name, cuisine, area, kind of place (cafe, pub, brewery), or vibe (rooftop, buffet, live music). One term, not a sentence, and no location words when latitude/longitude already cover the location.",
+          "required": true
+        },
+        {
+          "name": "entityType",
+          "type": "string",
+          "location": "body",
+          "description": "Rarely needed. The search already works out whether the query is a cuisine, area, category or vibe. Set this only to force a specific interpretation of an ambiguous term."
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID from get_saved_locations. Coordinates are resolved automatically. Use this instead of latitude/longitude when searching near a saved address."
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude for search. Use for direct city/area searches. Not needed if addressId is provided."
+        },
+        {
+          "name": "longitude",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude for search. Use for direct city/area searches. Not needed if addressId is provided."
+        },
+        {
+          "name": "limit",
+          "type": "float",
+          "location": "body",
+          "description": "Max restaurants to return. Default 10, max 30."
+        },
+        {
+          "name": "offset",
+          "type": "float",
+          "location": "body",
+          "description": "Restaurants to skip. Use the offset given in the previous response to show more of the same search."
+        }
+      ]
+    },
+    {
+      "name": "food_apply_food_coupon",
+      "description": "Apply coupon code or discount to food delivery order. Required: couponCode, addressId. Optional: cartId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "couponCode",
+          "type": "string",
+          "location": "body",
+          "description": "Coupon code to apply",
+          "required": true
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID where the order will be delivered (coordinates will be fetched automatically)",
+          "required": true
+        },
+        {
+          "name": "cartId",
+          "type": "string",
+          "location": "body",
+          "description": "Optional cart ID"
+        }
+      ]
+    },
+    {
+      "name": "food_check_payment_status",
+      "description": "Check one payment-status iteration for an in-flight UPI payment. Required: paasId. Optional: orderId, addressId, cartId (plus 2 more).",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "paasId",
+          "type": "string",
+          "location": "body",
+          "description": "The payment TRANSACTION id from the place-order/checkout response (response field 'paasId', e.",
+          "required": true
+        },
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID from the place-order or checkout response."
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "cartId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "lat",
+          "type": "float",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "lng",
+          "type": "float",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        }
+      ]
+    },
+    {
+      "name": "food_confirm_order",
+      "description": "Complete an order after payment succeeds. Required: orderId, addressId, lat, lng. Optional: transactionId, paasId, cartId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID returned by the place-order tool.",
+          "required": true
+        },
+        {
+          "name": "transactionId",
+          "type": "string",
+          "location": "body",
+          "description": "Transaction ID returned by the place-order tool (IM/Dineout only)."
+        },
+        {
+          "name": "paasId",
+          "type": "string",
+          "location": "body",
+          "description": "Payment transaction ID returned by the place-order tool (IM/Dineout only)."
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID — REQUIRED for Food. Echo from place_food_order response.",
+          "required": true
+        },
+        {
+          "name": "cartId",
+          "type": "string",
+          "location": "body",
+          "description": "Cart ID — optional but recommended for Food. Echo from place_food_order response."
+        },
+        {
+          "name": "lat",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude — REQUIRED for Food. Echo from place_food_order response.",
+          "required": true
+        },
+        {
+          "name": "lng",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude — REQUIRED for Food. Echo from place_food_order response.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "food_create_address",
+      "description": "Swiggy (Instamart/Food): Create a new delivery address for the authenticated user. Required: fullAddress, addressLine, addressLine2, city, postalCode, addressCategory, userName, userPhone. Optional: locality, latitude, longitude (plus 3 more).",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "fullAddress",
+          "type": "string",
+          "location": "body",
+          "description": "Complete address as provided by the user",
+          "required": true
+        },
+        {
+          "name": "addressLine",
+          "type": "string",
+          "location": "body",
+          "description": "Main street/building/house number (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "addressLine2",
+          "type": "string",
+          "location": "body",
+          "description": "Apartment, floor, wing, or additional details (REQUIRED - extract from full address, use empty string '' if not found)",
+          "required": true
+        },
+        {
+          "name": "locality",
+          "type": "string",
+          "location": "body",
+          "description": "Area, neighborhood, or locality name (optional)"
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "location": "body",
+          "description": "City name (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "postalCode",
+          "type": "string",
+          "location": "body",
+          "description": "Postal/ZIP code (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude coordinate of the address (optional - auto-resolved from address if omitted)"
+        },
+        {
+          "name": "longitude",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude coordinate of the address (optional - auto-resolved from address if omitted)"
+        },
+        {
+          "name": "addressCategory",
+          "type": "string",
+          "location": "body",
+          "description": "Type of address: HOME, WORK, OFFICE, FRIENDS_AND_FAMILY, or OTHER (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "addressTag",
+          "type": "string",
+          "location": "body",
+          "description": "Friendly name/label for the address (e.g., 'My Home', 'Office', 'Mom's Place') (optional)"
+        },
+        {
+          "name": "userName",
+          "type": "string",
+          "location": "body",
+          "description": "Account holder name (authenticated user) (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "userPhone",
+          "type": "string",
+          "location": "body",
+          "description": "Account holder phone number (authenticated user) (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "receiverName",
+          "type": "string",
+          "location": "body",
+          "description": "Receiver name if delivering to someone else (optional)"
+        },
+        {
+          "name": "receiverPhone",
+          "type": "string",
+          "location": "body",
+          "description": "Receiver phone if delivering to someone else (optional)"
+        }
+      ]
+    },
+    {
+      "name": "food_delete_address",
+      "description": "Swiggy (Instamart/Food): Delete a saved delivery address for the authenticated user. Required: addressId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "The ID of the address to delete (from get_addresses response)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "food_fetch_food_coupons",
+      "description": "Get available coupons and offers for food delivery order. Required: restaurantId, addressId. Optional: couponCode.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "restaurantId",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant ID for the cart",
+          "required": true
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID where the order will be delivered (coordinates will be fetched automatically)",
+          "required": true
+        },
+        {
+          "name": "couponCode",
+          "type": "string",
+          "location": "body",
+          "description": "Optional coupon code to check applicability of a specific coupon"
+        }
+      ]
+    },
+    {
+      "name": "food_flush_food_cart",
+      "description": "Clear or empty the food delivery cart.",
+      "method": "POST",
+      "path": "/food",
+      "params": []
+    },
+    {
+      "name": "food_get_addresses",
+      "description": "Swiggy (Instamart/Food): Get saved delivery addresses for the authenticated Swiggy user, sorted by last order date (most recent first). Optional: page, pageSize.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "page",
+          "type": "float",
+          "location": "body",
+          "description": "Page number for pagination, 1-based (default: 1)"
+        },
+        {
+          "name": "pageSize",
+          "type": "float",
+          "location": "body",
+          "description": "Number of addresses per page (default: 10, max: 10)"
+        }
+      ]
+    },
+    {
+      "name": "food_get_food_cart",
+      "description": "Get current food delivery cart with all items. Required: addressId. Optional: restaurantName.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID to get accurate delivery charges based on location.",
+          "required": true
+        },
+        {
+          "name": "restaurantName",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant name from search_restaurants or search_menu results. Pass this so the cart view can display the restaurant name (the cart API does not always return it)."
+        }
+      ]
+    },
+    {
+      "name": "food_get_food_delivery_status",
+      "description": "Get the latest delivery ETA and terminal delivery state for a Food order. Required: orderId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID to fetch the delivery ETA for (required).",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "food_get_food_order_details",
+      "description": "Get detailed information about a specific food delivery order. Required: orderId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID to fetch details for (can be obtained from get_food_orders)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "food_get_food_orders",
+      "description": "Swiggy Food order history - Use this to fetch ORDER HISTORY, past orders, or active orders. Required: addressId. Optional: activeOnly.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID to use for fetching orders (can be obtained from get_addresses)",
+          "required": true
+        },
+        {
+          "name": "activeOnly",
+          "type": "bool",
+          "location": "body",
+          "description": "Set to true to filter only active/in-progress orders. Default: false."
+        }
+      ]
+    },
+    {
+      "name": "food_get_payment_options",
+      "description": "Fetch the live payment methods currently available for the cart. Optional: addressId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: pass the same addressId you used for get_food_cart."
+        }
+      ]
+    },
+    {
+      "name": "food_get_restaurant_menu",
+      "description": "Browse a restaurant's complete menu as a flat, deduplicated list of dishes. Required: addressId, restaurantId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID from get_addresses tool",
+          "required": true
+        },
+        {
+          "name": "restaurantId",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant ID to fetch menu for (from search_restaurants)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "food_place_food_order",
+      "description": "Place food delivery order and confirm order placement. Required: addressId. Optional: paymentMethod, intentApp, generateUPIQR (plus 1 more).",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID from the user's saved addresses (coordinates will be fetched automatically)",
+          "required": true
+        },
+        {
+          "name": "paymentMethod",
+          "type": "string",
+          "location": "body",
+          "description": "The payment method the user selected (e.g. 'UPI' or 'Cash'). For UPI payments, first call get_payment_options and pass the method the user chose. For Cash/COD, this may be omitted only when Cash is the only available method."
+        },
+        {
+          "name": "intentApp",
+          "type": "string",
+          "location": "body",
+          "description": "Optional advanced parameter. Leave blank unless the runtime response of the preceding get_food_cart call explicitly tells you what to pass."
+        },
+        {
+          "name": "generateUPIQR",
+          "type": "bool",
+          "location": "body",
+          "description": "Optional advanced parameter. Leave blank unless the runtime response of the preceding get_food_cart call explicitly tells you to enable it."
+        },
+        {
+          "name": "noteToRestaurant",
+          "type": "string",
+          "location": "body",
+          "description": "Free-form note to the restaurant preparing the order (e.g. 'no onions', 'less spicy'). Not for delivery partner instructions."
+        }
+      ]
+    },
+    {
+      "name": "food_report_error",
+      "description": "Generate an error report to share with the Swiggy MCP team. Required: tool, errorMessage. Optional: domain, flowDescription, toolContext (plus 1 more).",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "tool",
+          "type": "string",
+          "location": "body",
+          "description": "Name of the tool that errored (e.g., 'checkout', 'search_products', 'place_food_order')",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "location": "body",
+          "description": "MCP server name where the error occurred (e."
+        },
+        {
+          "name": "errorMessage",
+          "type": "string",
+          "location": "body",
+          "description": "The error message the user saw",
+          "required": true
+        },
+        {
+          "name": "flowDescription",
+          "type": "string",
+          "location": "body",
+          "description": "Brief description of what the user was doing (e."
+        },
+        {
+          "name": "toolContext",
+          "type": "string",
+          "location": "body",
+          "description": "Key-value pairs of identifiers from the failed tool call."
+        },
+        {
+          "name": "userNotes",
+          "type": "string",
+          "location": "body",
+          "description": "Any additional notes or context the user wants to share"
+        }
+      ]
+    },
+    {
+      "name": "food_search_menu",
+      "description": "Search for dishes and menu items to order for food delivery. Required: addressId, query. Optional: restaurantIdOfAddedItem, vegFilter, offset.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "REQUIRED: Address ID obtained from get_addresses tool. You MUST call get_addresses first to get this value. Do NOT invent or guess addressId values.",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "location": "body",
+          "description": "REQUIRED: Search query (dish name). Cannot be empty. Examples: 'biryani', 'pizza margherita', 'paneer tikka'",
+          "required": true
+        },
+        {
+          "name": "restaurantIdOfAddedItem",
+          "type": "string",
+          "location": "body",
+          "description": "Optional restaurant ID to scope search"
+        },
+        {
+          "name": "vegFilter",
+          "type": "string",
+          "location": "body",
+          "description": "Veg filter flag (0 or 1). Pass 1 for veg-only items. 0 or omitted returns mixed veg + non-veg. There is NO non-veg-only filter — if user asks for 'non-veg only', pass 0 (mixed) and mention in text that you are showing all items including non-veg, since a non-veg-only filter is not available yet."
+        },
+        {
+          "name": "offset",
+          "type": "float",
+          "location": "body",
+          "description": "Pagination offset. Use nextOffset from previous response to load more results. Default: 0."
+        }
+      ]
+    },
+    {
+      "name": "food_search_restaurants",
+      "description": "Search and order food from restaurants for delivery. Required: addressId, query. Optional: offset, collection.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID from get_addresses tool",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "location": "body",
+          "description": "Search query (restaurant name or cuisine)",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "float",
+          "location": "body",
+          "description": "Pagination offset. Use nextOffset from previous response to load more results. Default: 0."
+        },
+        {
+          "name": "collection",
+          "type": "string",
+          "location": "body",
+          "description": "Optional Swiggy storefront collection to scope results to. Map the user's **intent** to a collection (users rarely name the storefront directly). Set exactly one when the intent clearly matches, otherwise omit. `EATRIGHT` — healthy / high-protein / low-calorie / diet food. `BOLT` — ultra-fast ~10-minute delivery. `STORE_99` — budget food around ₹99."
+        }
+      ]
+    },
+    {
+      "name": "food_track_food_order",
+      "description": "Track food delivery order status and delivery progress. Optional: orderId.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Optional: Specific order ID to track. If not provided, returns all active orders."
+        }
+      ]
+    },
+    {
+      "name": "food_update_food_cart",
+      "description": "Add items to food delivery cart or update cart contents. Required: restaurantId, cartItems, addressId. Optional: restaurantName, cutleryOptIn.",
+      "method": "POST",
+      "path": "/food",
+      "params": [
+        {
+          "name": "restaurantId",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant ID for the cart",
+          "required": true
+        },
+        {
+          "name": "cartItems",
+          "type": "string",
+          "location": "body",
+          "description": "Array of items to add to cart with their customizations",
+          "required": true
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID to get accurate delivery charges based on location.",
+          "required": true
+        },
+        {
+          "name": "restaurantName",
+          "type": "string",
+          "location": "body",
+          "description": "Restaurant name from search_restaurants or search_menu results. Pass this so the cart view can display the restaurant name (the cart API does not always return it)."
+        },
+        {
+          "name": "cutleryOptIn",
+          "type": "bool",
+          "location": "body",
+          "description": "True to request cutlery, false to skip. Omit to leave preference unchanged."
+        }
+      ]
+    },
+    {
+      "name": "instamart_apply_coupon",
+      "description": "Swiggy Instamart (Grocery): Apply a coupon code to the current Instamart cart. Required: couponCode.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "couponCode",
+          "type": "string",
+          "location": "body",
+          "description": "REQUIRED: The coupon code to apply (e.g. 'SAVE100', 'FREEDEL'). Case-insensitive — will be uppercased automatically.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "instamart_check_payment_status",
+      "description": "Check one payment-status iteration for an in-flight UPI payment. Required: paasId. Optional: orderId, addressId, cartId (plus 2 more).",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "paasId",
+          "type": "string",
+          "location": "body",
+          "description": "The payment TRANSACTION id from the place-order/checkout response (response field 'paasId', e.",
+          "required": true
+        },
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID from the place-order or checkout response."
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "cartId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "lat",
+          "type": "float",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        },
+        {
+          "name": "lng",
+          "type": "float",
+          "location": "body",
+          "description": "Food only: echo from place_food_order — passed through for auto-confirm."
+        }
+      ]
+    },
+    {
+      "name": "instamart_checkout",
+      "description": "Swiggy Instamart (Grocery): Place and confirm Swiggy Instamart grocery order. Required: addressId. Optional: paymentMethod, intentApp, generateUPIQR.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Delivery address ID (from get_addresses - user must have selected this address)",
+          "required": true
+        },
+        {
+          "name": "paymentMethod",
+          "type": "string",
+          "location": "body",
+          "description": "Payment method GROUP, not an app id. Use one of: 'UPI', 'Cash'/'COD', 'SwiggyPay'. For a UPI app selection pass paymentMethod='UPI' and put the app id in `intentApp` — do NOT put the app id (e.g. 'gpay://upi/') here. Use the method the user selected. Auto-defaults to the user's available method if omitted."
+        },
+        {
+          "name": "intentApp",
+          "type": "string",
+          "location": "body",
+          "description": "The selected UPI app id (e.g. 'gpay://upi/'), copied EXACTLY from the chosen UPI method id. Only set this together with paymentMethod='UPI'. Leave blank for Cash/COD/QR."
+        },
+        {
+          "name": "generateUPIQR",
+          "type": "bool",
+          "location": "body",
+          "description": "Optional advanced parameter. Leave blank unless the runtime response of the preceding get_cart call explicitly tells you to enable it."
+        }
+      ]
+    },
+    {
+      "name": "instamart_clear_cart",
+      "description": "Clear (remove all items from) the Instamart cart.",
+      "method": "POST",
+      "path": "/im",
+      "params": []
+    },
+    {
+      "name": "instamart_confirm_order",
+      "description": "Complete an order after payment succeeds. Required: orderId, paasId. Optional: transactionId, addressId, cartId (plus 2 more).",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID returned by the place-order tool.",
+          "required": true
+        },
+        {
+          "name": "transactionId",
+          "type": "string",
+          "location": "body",
+          "description": "Transaction ID returned by the place-order tool (IM/Dineout only)."
+        },
+        {
+          "name": "paasId",
+          "type": "string",
+          "location": "body",
+          "description": "Payment transaction ID returned by the place-order tool (IM/Dineout only).",
+          "required": true
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only; not used by Instamart confirmation."
+        },
+        {
+          "name": "cartId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only; not used by Instamart confirmation."
+        },
+        {
+          "name": "lat",
+          "type": "float",
+          "location": "body",
+          "description": "Food only; not used by Instamart confirmation."
+        },
+        {
+          "name": "lng",
+          "type": "float",
+          "location": "body",
+          "description": "Food only; not used by Instamart confirmation."
+        }
+      ]
+    },
+    {
+      "name": "instamart_create_address",
+      "description": "Swiggy (Instamart/Food): Create a new delivery address for the authenticated user. Required: fullAddress, addressLine, addressLine2, city, postalCode, addressCategory, userName, userPhone. Optional: locality, latitude, longitude (plus 3 more).",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "fullAddress",
+          "type": "string",
+          "location": "body",
+          "description": "Complete address as provided by the user",
+          "required": true
+        },
+        {
+          "name": "addressLine",
+          "type": "string",
+          "location": "body",
+          "description": "Main street/building/house number (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "addressLine2",
+          "type": "string",
+          "location": "body",
+          "description": "Apartment, floor, wing, or additional details (REQUIRED - extract from full address, use empty string '' if not found)",
+          "required": true
+        },
+        {
+          "name": "locality",
+          "type": "string",
+          "location": "body",
+          "description": "Area, neighborhood, or locality name (optional)"
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "location": "body",
+          "description": "City name (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "postalCode",
+          "type": "string",
+          "location": "body",
+          "description": "Postal/ZIP code (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "latitude",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude coordinate of the address (optional — the server will geocode from the address if omitted)"
+        },
+        {
+          "name": "longitude",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude coordinate of the address (optional — the server will geocode from the address if omitted)"
+        },
+        {
+          "name": "addressCategory",
+          "type": "string",
+          "location": "body",
+          "description": "Type of address: HOME, WORK, OFFICE, FRIENDS_AND_FAMILY, or OTHER (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "addressTag",
+          "type": "string",
+          "location": "body",
+          "description": "Friendly name/label for the address (e.g., 'My Home', 'Office', 'Mom's Place') (optional)"
+        },
+        {
+          "name": "userName",
+          "type": "string",
+          "location": "body",
+          "description": "Account holder name (authenticated user) (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "userPhone",
+          "type": "string",
+          "location": "body",
+          "description": "Account holder phone number (authenticated user) (REQUIRED)",
+          "required": true
+        },
+        {
+          "name": "receiverName",
+          "type": "string",
+          "location": "body",
+          "description": "Receiver name if delivering to someone else (optional)"
+        },
+        {
+          "name": "receiverPhone",
+          "type": "string",
+          "location": "body",
+          "description": "Receiver phone if delivering to someone else (optional)"
+        }
+      ]
+    },
+    {
+      "name": "instamart_delete_address",
+      "description": "Swiggy (Instamart/Food): Delete a saved delivery address for the authenticated user. Required: addressId.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "The ID of the address to delete (from get_addresses response)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "instamart_get_addresses",
+      "description": "Swiggy (Instamart/Food): Get saved delivery addresses for the authenticated Swiggy user, sorted by last order date (most recent first). Optional: page, pageSize.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "page",
+          "type": "float",
+          "location": "body",
+          "description": "Page number for pagination, 1-based (default: 1)"
+        },
+        {
+          "name": "pageSize",
+          "type": "float",
+          "location": "body",
+          "description": "Number of addresses per page (default: 10, max: 10)"
+        }
+      ]
+    },
+    {
+      "name": "instamart_get_cart",
+      "description": "Swiggy Instamart (Grocery): Get current Swiggy Instamart grocery cart with all items and bill breakdown.",
+      "method": "POST",
+      "path": "/im",
+      "params": []
+    },
+    {
+      "name": "instamart_get_delivery_status",
+      "description": "Usage notes - Use for structured delivery ETA refreshes after an Instamart order is placed. - Do not call in a tight loop. Required: orderId, addressId.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "Order ID to fetch the delivery ETA for (required).",
+          "required": true
+        },
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Delivery address ID for the order (required; coords resolved automatically).",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "instamart_get_order_details",
+      "description": "Get detailed information for a specific Swiggy Instamart order by order ID. Required: orderId.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "The order ID to fetch details for (required). Can be obtained from get_orders tool.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "instamart_get_orders",
+      "description": "Swiggy Instamart order history - Use this to fetch ORDER HISTORY, past orders, or order preferences. Optional: count, orderType, activeOnly.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "count",
+          "type": "float",
+          "location": "body",
+          "description": "Number of orders to fetch (default: 10, max recommended: 20)"
+        },
+        {
+          "name": "orderType",
+          "type": "string",
+          "location": "body",
+          "description": "Order type filter (e.g., 'DASH', 'INSTAMART'). Default: 'DASH'"
+        },
+        {
+          "name": "activeOnly",
+          "type": "bool",
+          "location": "body",
+          "description": "Set to true to filter only active/ongoing orders. Default: false (returns all orders)"
+        }
+      ]
+    },
+    {
+      "name": "instamart_get_payment_options",
+      "description": "Fetch the live payment methods currently available for the cart. Optional: addressId.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Food only: pass the same addressId you used for get_food_cart."
+        }
+      ]
+    },
+    {
+      "name": "instamart_list_coupons",
+      "description": "Swiggy Instamart (Grocery): List available coupons for the current cart. Required: addressId.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "REQUIRED: Delivery address ID from get_addresses. Used to determine location-specific coupon availability.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "instamart_report_error",
+      "description": "Generate an error report to share with the Swiggy MCP team. Required: tool, errorMessage. Optional: domain, flowDescription, toolContext (plus 1 more).",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "tool",
+          "type": "string",
+          "location": "body",
+          "description": "Name of the tool that errored (e.g., 'checkout', 'search_products', 'place_food_order')",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "location": "body",
+          "description": "MCP server name where the error occurred (e."
+        },
+        {
+          "name": "errorMessage",
+          "type": "string",
+          "location": "body",
+          "description": "The error message the user saw",
+          "required": true
+        },
+        {
+          "name": "flowDescription",
+          "type": "string",
+          "location": "body",
+          "description": "Brief description of what the user was doing (e."
+        },
+        {
+          "name": "toolContext",
+          "type": "string",
+          "location": "body",
+          "description": "Key-value pairs of identifiers from the failed tool call."
+        },
+        {
+          "name": "userNotes",
+          "type": "string",
+          "location": "body",
+          "description": "Any additional notes or context the user wants to share"
+        }
+      ]
+    },
+    {
+      "name": "instamart_search_products",
+      "description": "Search for products available at the selected address. Required: addressId, query. Optional: offset.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "REQUIRED: Address ID obtained from get_addresses tool. You MUST call get_addresses first to get this value. Do NOT invent or guess addressId values.",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "location": "body",
+          "description": "REQUIRED: Search query (product name, category, or brand). Cannot be empty.",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "float",
+          "location": "body",
+          "description": "Pagination offset (default: 0)"
+        }
+      ]
+    },
+    {
+      "name": "instamart_track_order",
+      "description": "Track Swiggy Instamart order status in real-time. Required: orderId, lat, lng.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "orderId",
+          "type": "string",
+          "location": "body",
+          "description": "The order ID to track (required). Can be obtained from get_orders tool.",
+          "required": true
+        },
+        {
+          "name": "lat",
+          "type": "float",
+          "location": "body",
+          "description": "Latitude of the delivery address (required for accurate tracking)",
+          "required": true
+        },
+        {
+          "name": "lng",
+          "type": "float",
+          "location": "body",
+          "description": "Longitude of the delivery address (required for accurate tracking)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "instamart_update_cart",
+      "description": "Swiggy Instamart (Grocery): Update Swiggy Instamart grocery cart with items. Required: selectedAddressId, items.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "selectedAddressId",
+          "type": "string",
+          "location": "body",
+          "description": "Selected delivery address ID from get_addresses tool",
+          "required": true
+        },
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "Array of items to add to cart",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "instamart_your_go_to_items",
+      "description": "Fetch the user's Your Go To Items (frequently or recently ordered items) for the selected delivery address. Required: addressId. Optional: offset.",
+      "method": "POST",
+      "path": "/im",
+      "params": [
+        {
+          "name": "addressId",
+          "type": "string",
+          "location": "body",
+          "description": "Address ID from get_addresses tool",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "float",
+          "location": "body",
+          "description": "Pagination offset (default: 0)"
+        }
+      ]
+    }
+  ],
+  "novel_features": [
+    {
+      "name": "Cross-domain spend/order history",
+      "command": "history",
+      "description": "See total spend and order counts across Food and Instamart in one view, even though Swiggy keeps them completely separate. Dineout has no orders-list tool and is not included."
+    },
+    {
+      "name": "Unified UPI payment wait",
+      "command": "pay wait",
+      "description": "Block until a UPI payment resolves instead of hand-rolling a polling loop yourself. Not for COD orders — check payment status once and proceed instead."
+    },
+    {
+      "name": "Safe retry after failed order placement",
+      "command": "order verify-before-retry",
+      "description": "Check whether a food or grocery order actually went through before retrying a failed placement."
+    },
+    {
+      "name": "Auth/session health check",
+      "command": "status",
+      "description": "See at a glance whether your Swiggy login is still valid and which domain sessions are active."
+    }
+  ]
+}

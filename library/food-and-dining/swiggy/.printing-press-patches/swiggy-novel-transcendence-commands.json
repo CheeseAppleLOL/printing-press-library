@@ -1,0 +1,12 @@
+{
+  "schema_version": 2,
+  "id": "swiggy-novel-transcendence-commands",
+  "applied_at": "2026-09-13",
+  "base_run_id": "20260913-115332-8cbd64e9",
+  "base_printing_press_version": "4.32.1",
+  "summary": "Implemented the 4 shipping novel/transcendence commands the generator scaffolded as TODO stubs: history (cross-domain spend aggregation), pay wait (UPI payment long-poll), order verify-before-retry (safe-retry guard for non-idempotent order placement), and status (OAuth session health check). A 5th planned feature, instamart quick-reorder, was descoped mid-session (see Gaps in the shipcheck report) because this account has no Instamart order history to test against; its scaffold and code were removed.",
+  "reason": "The generator produces Cobra wiring plus a TODO-error RunE body for novel commands; the actual feature logic must be hand-written per generator design.",
+  "files": ["internal/cli/history.go", "internal/cli/pay_wait.go", "internal/cli/pay.go", "internal/cli/order_verify_before_retry.go", "internal/cli/order.go", "internal/cli/status.go", "internal/cli/novel_helpers.go"],
+  "validated_outcome": "All 4 verified against real production data: history returned real cross-domain order counts/spend; status correctly reported real token expiry; order verify-before-retry correctly reconciled against real order history; pay wait's terminal-detection logic confirmed correct via direct inspection of a real check_payment_status response. Full live dogfood matrix 165/165, 0 hollow-coverage features.",
+  "upstream_issue": null
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": 2,
+  "id": "swiggy-oauth-pkce-dcr-login",
+  "applied_at": "2026-09-13",
+  "base_run_id": "20260913-115332-8cbd64e9",
+  "base_printing_press_version": "4.32.1",
+  "summary": "Added a full hand-written OAuth 2.1 Authorization Code + PKCE + Dynamic Client Registration login command (internal/cli/auth_login.go) and registered it in the generated auth command group.",
+  "reason": "cli-printing-press has no generator template for OAuth 2.1 PKCE + DCR (only device_code/client_credentials/simple bearer are template-backed). Swiggy Builders Club requires this exact flow (phone+OTP consent, no static API key). Implemented per references/oauth2-pkce-cli-checklist.md: fresh state/verifier per attempt, S256 challenge, state validated before code exchange, loopback-only callback, separate timeouts for browser-wait vs token-exchange, token-exchange client that refuses cross-origin redirects.",
+  "files": ["internal/cli/auth_login.go", "internal/cli/auth.go"],
+  "validated_outcome": "Full login flow completed end-to-end against production mcp.swiggy.com in this session (real phone+OTP, real DCR registration, real token issued and stored). gosec G112 (Slowloris) fixed with ReadHeaderTimeout on the loopback callback server; G204 suppressed with a narrow, reviewed #nosec justification for the fixed-argv per-OS browser-open exec.",
+  "upstream_issue": null
+}

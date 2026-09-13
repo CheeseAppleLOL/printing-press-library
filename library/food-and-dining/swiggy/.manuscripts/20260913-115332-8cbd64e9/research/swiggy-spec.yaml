@@ -1,0 +1,1170 @@
+name: swiggy
+description: "Official Swiggy Builders Club CLI \u2014 Food, Instamart, and Dineout MCP tools over one persistent OAuth session"
+version: "0.1.0"
+base_url: "https://mcp.swiggy.com"
+category: food-and-dining
+
+auth:
+  type: oauth2
+  header: "Authorization"
+  format: "Bearer {token}"
+  oauth2_grant: authorization_code
+  token_url: "https://mcp.swiggy.com/auth/token"
+  scopes: ["mcp:tools"]
+  default_client_id: "swiggy-mcp"
+  env_vars:
+    - SWIGGY_ACCESS_TOKEN
+
+# learn no-entities escape: tool params reference server-assigned opaque IDs (addressId, restaurantId, orderId) resolved at runtime from prior calls, not user-typed aliasable entity names
+learn:
+  disabled: true
+
+cache:
+  enabled: false
+
+resources:
+  food:
+    description: "Swiggy Food MCP tools"
+    endpoints:
+      apply_food_coupon:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Apply coupon code or discount to food delivery order"
+        body:
+          - name: couponCode
+            type: string
+            required: true
+            description: "Coupon code to apply"
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID where the order will be delivered (coordinates will be fetched automatically)"
+          - name: cartId
+            type: string
+            required: false
+            description: "Optional cart ID"
+        response:
+          type: object
+      check_payment_status:
+        method: POST
+        path: "/food"
+        description: "Check one payment-status iteration for an in-flight UPI payment"
+        body:
+          - name: paasId
+            type: string
+            required: true
+            description: "The payment TRANSACTION id from the place-order/checkout response (response field \"paasId\", e.g. a long numeric/alphanumeric id). NOT the payment-method name — never pass \"PayWithQR\", \"UPI\", \"UPIIntent\", or an app package id here. If you do not have a real paasId, do not call this tool; re-read the checkout response which contains paasId + orderId."
+          - name: orderId
+            type: string
+            required: false
+            description: "Order ID from the place-order or checkout response. Pass it when the tool response included an order ID."
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: cartId
+            type: string
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: lat
+            type: float
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: lng
+            type: float
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+        response:
+          type: object
+      confirm_order:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Complete an order after payment succeeds"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "Order ID returned by the place-order tool."
+          - name: transactionId
+            type: string
+            required: false
+            description: "Transaction ID returned by the place-order tool (IM/Dineout only)."
+          - name: paasId
+            type: string
+            required: false
+            description: "Payment transaction ID returned by the place-order tool (IM/Dineout only)."
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID — REQUIRED for Food. Echo from place_food_order response."
+          - name: cartId
+            type: string
+            required: false
+            description: "Cart ID — optional but recommended for Food. Echo from place_food_order response."
+          - name: lat
+            type: float
+            required: true
+            description: "Latitude — REQUIRED for Food. Echo from place_food_order response."
+          - name: lng
+            type: float
+            required: true
+            description: "Longitude — REQUIRED for Food. Echo from place_food_order response."
+        response:
+          type: object
+      create_address:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Swiggy (Instamart/Food): Create a new delivery address for the authenticated user."
+        body:
+          - name: fullAddress
+            type: string
+            required: true
+            description: "Complete address as provided by the user"
+          - name: addressLine
+            type: string
+            required: true
+            description: "Main street/building/house number (REQUIRED)"
+          - name: addressLine2
+            type: string
+            required: true
+            description: "Apartment, floor, wing, or additional details (REQUIRED - extract from full address, use empty string \"\" if not found)"
+          - name: locality
+            type: string
+            required: false
+            description: "Area, neighborhood, or locality name (optional)"
+          - name: city
+            type: string
+            required: true
+            description: "City name (REQUIRED)"
+          - name: postalCode
+            type: string
+            required: true
+            description: "Postal/ZIP code (REQUIRED)"
+          - name: latitude
+            type: float
+            required: false
+            description: "Latitude coordinate of the address (optional - auto-resolved from address if omitted)"
+          - name: longitude
+            type: float
+            required: false
+            description: "Longitude coordinate of the address (optional - auto-resolved from address if omitted)"
+          - name: addressCategory
+            type: string
+            required: true
+            description: "Type of address: HOME, WORK, OFFICE, FRIENDS_AND_FAMILY, or OTHER (REQUIRED)"
+            enum: ["HOME", "WORK", "OFFICE", "FRIENDS_AND_FAMILY", "OTHER"]
+          - name: addressTag
+            type: string
+            required: false
+            description: "Friendly name/label for the address (e.g., \"My Home\", \"Office\", \"Mom's Place\") (optional)"
+          - name: userName
+            type: string
+            required: true
+            description: "Account holder name (authenticated user) (REQUIRED)"
+          - name: userPhone
+            type: string
+            required: true
+            description: "Account holder phone number (authenticated user) (REQUIRED)"
+          - name: receiverName
+            type: string
+            required: false
+            description: "Receiver name if delivering to someone else (optional)"
+          - name: receiverPhone
+            type: string
+            required: false
+            description: "Receiver phone if delivering to someone else (optional)"
+        response:
+          type: object
+      delete_address:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Swiggy (Instamart/Food): Delete a saved delivery address for the authenticated user."
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "The ID of the address to delete (from get_addresses response)"
+        response:
+          type: object
+      fetch_food_coupons:
+        method: POST
+        path: "/food"
+        description: "Get available coupons and offers for food delivery order"
+        body:
+          - name: restaurantId
+            type: string
+            required: true
+            description: "Restaurant ID for the cart"
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID where the order will be delivered (coordinates will be fetched automatically)"
+          - name: couponCode
+            type: string
+            required: false
+            description: "Optional coupon code to check applicability of a specific coupon"
+        response:
+          type: object
+      flush_food_cart:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Clear or empty the food delivery cart"
+        response:
+          type: object
+      get_addresses:
+        method: POST
+        path: "/food"
+        description: "Swiggy (Instamart/Food): Get saved delivery addresses for the authenticated Swiggy user, sorted by last order date (most recent first)"
+        body:
+          - name: page
+            type: float
+            required: false
+            description: "Page number for pagination, 1-based (default: 1)"
+          - name: pageSize
+            type: float
+            required: false
+            description: "Number of addresses per page (default: 10, max: 10)"
+        response:
+          type: object
+      get_food_cart:
+        method: POST
+        path: "/food"
+        description: "Get current food delivery cart with all items"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID to get accurate delivery charges based on location."
+          - name: restaurantName
+            type: string
+            required: false
+            description: "Restaurant name from search_restaurants or search_menu results. Pass this so the cart view can display the restaurant name (the cart API does not always return it)."
+        response:
+          type: object
+      get_food_delivery_status:
+        method: POST
+        path: "/food"
+        description: "Get the latest delivery ETA and terminal delivery state for a Food order"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "Order ID to fetch the delivery ETA for (required)."
+        response:
+          type: object
+      get_food_order_details:
+        method: POST
+        path: "/food"
+        description: "Get detailed information about a specific food delivery order"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "Order ID to fetch details for (can be obtained from get_food_orders)"
+        response:
+          type: object
+      get_food_orders:
+        method: POST
+        path: "/food"
+        description: "Swiggy Food order history - Use this to fetch ORDER HISTORY, past orders, or active orders"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID to use for fetching orders (can be obtained from get_addresses)"
+          - name: activeOnly
+            type: bool
+            required: false
+            description: "Set to true to filter only active/in-progress orders. Default: false."
+        response:
+          type: object
+      get_payment_options:
+        method: POST
+        path: "/food"
+        description: "Fetch the live payment methods currently available for the cart"
+        body:
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only: pass the same addressId you used for get_food_cart. It is echoed back so the payment picker can place the order directly. Recommended for Food UPI."
+        response:
+          type: object
+      get_restaurant_menu:
+        method: POST
+        path: "/food"
+        description: "Browse a restaurant's complete menu as a flat, deduplicated list of dishes"
+        example: "  swiggy-pp-cli food get-restaurant-menu --address-id addr_01HXYZ --restaurant-id r_123 --select restaurantId,items.id,items.name,items.price"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID from get_addresses tool"
+          - name: restaurantId
+            type: string
+            required: true
+            description: "Restaurant ID to fetch menu for (from search_restaurants)"
+        response:
+          type: object
+      place_food_order:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Place food delivery order and confirm order placement"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID from the user's saved addresses (coordinates will be fetched automatically)"
+          - name: paymentMethod
+            type: string
+            required: false
+            description: "The payment method the user selected (e.g. \"UPI\" or \"Cash\"). For UPI payments, first call get_payment_options and pass the method the user chose. For Cash/COD, this may be omitted only when Cash is the only available method."
+          - name: intentApp
+            type: string
+            required: false
+            description: "Optional advanced parameter. Leave blank unless the runtime response of the preceding get_food_cart call explicitly tells you what to pass."
+          - name: generateUPIQR
+            type: bool
+            required: false
+            description: "Optional advanced parameter. Leave blank unless the runtime response of the preceding get_food_cart call explicitly tells you to enable it."
+          - name: noteToRestaurant
+            type: string
+            required: false
+            description: "Free-form note to the restaurant preparing the order (e.g. \"no onions\", \"less spicy\"). Not for delivery partner instructions."
+        response:
+          type: object
+      report_error:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Generate an error report to share with the Swiggy MCP team"
+        body:
+          - name: tool
+            type: string
+            required: true
+            description: "Name of the tool that errored (e.g., \"checkout\", \"search_products\", \"place_food_order\")"
+          - name: domain
+            type: string
+            required: false
+            description: "MCP server name where the error occurred (e.g., \"im\", \"food\", \"dineout\"). Auto-detected if not provided."
+          - name: errorMessage
+            type: string
+            required: true
+            description: "The error message the user saw"
+          - name: flowDescription
+            type: string
+            required: false
+            description: "Brief description of what the user was doing (e.g., \"searched for milk → added to cart → checkout failed\")"
+          - name: toolContext
+            type: string
+            required: false
+            description: "Key-value pairs of identifiers from the failed tool call. Include ALL relevant IDs such as: orderId, restaurantId, addressId, spinId, menu_item_id, couponCode, query, cartId, slotId, paymentMethod, guestCount, itemId — whichever were part of the request that failed."
+          - name: userNotes
+            type: string
+            required: false
+            description: "Any additional notes or context the user wants to share"
+        response:
+          type: object
+      search_menu:
+        method: POST
+        path: "/food"
+        description: "Search for dishes and menu items to order for food delivery"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "REQUIRED: Address ID obtained from get_addresses tool. You MUST call get_addresses first to get this value. Do NOT invent or guess addressId values."
+          - name: query
+            type: string
+            required: true
+            description: "REQUIRED: Search query (dish name). Cannot be empty. Examples: \"biryani\", \"pizza margherita\", \"paneer tikka\""
+          - name: restaurantIdOfAddedItem
+            type: string
+            required: false
+            description: "Optional restaurant ID to scope search"
+          - name: vegFilter
+            type: string
+            required: false
+            description: "Veg filter flag (0 or 1). Pass 1 for veg-only items. 0 or omitted returns mixed veg + non-veg. There is NO non-veg-only filter — if user asks for \"non-veg only\", pass 0 (mixed) and mention in text that you are showing all items including non-veg, since a non-veg-only filter is not available yet."
+          - name: offset
+            type: float
+            required: false
+            description: "Pagination offset. Use nextOffset from previous response to load more results. Default: 0."
+        response:
+          type: object
+      search_restaurants:
+        method: POST
+        path: "/food"
+        description: "Search and order food from restaurants for delivery"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID from get_addresses tool"
+          - name: query
+            type: string
+            required: true
+            description: "Search query (restaurant name or cuisine)"
+          - name: offset
+            type: float
+            required: false
+            description: "Pagination offset. Use nextOffset from previous response to load more results. Default: 0."
+          - name: collection
+            type: string
+            required: false
+            description: "Optional Swiggy storefront collection to scope results to. Map the user's **intent** to a collection (users rarely name the storefront directly). Set exactly one when the intent clearly matches, otherwise omit. `EATRIGHT` — healthy / high-protein / low-calorie / diet food. `BOLT` — ultra-fast ~10-minute delivery. `STORE_99` — budget food around ₹99."
+            enum: ["EATRIGHT", "BOLT", "STORE_99"]
+        response:
+          type: object
+      track_food_order:
+        method: POST
+        path: "/food"
+        description: "Track food delivery order status and delivery progress"
+        body:
+          - name: orderId
+            type: string
+            required: false
+            description: "Optional: Specific order ID to track. If not provided, returns all active orders."
+        response:
+          type: object
+      update_food_cart:
+        method: POST
+        path: "/food"
+        mutation: true
+        description: "Add items to food delivery cart or update cart contents"
+        body:
+          - name: restaurantId
+            type: string
+            required: true
+            description: "Restaurant ID for the cart"
+          - name: cartItems
+            type: string
+            required: true
+            description: "Array of items to add to cart with their customizations"
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID to get accurate delivery charges based on location."
+          - name: restaurantName
+            type: string
+            required: false
+            description: "Restaurant name from search_restaurants or search_menu results. Pass this so the cart view can display the restaurant name (the cart API does not always return it)."
+          - name: cutleryOptIn
+            type: bool
+            required: false
+            description: "True to request cutlery, false to skip. Omit to leave preference unchanged."
+        response:
+          type: object
+
+  instamart:
+    description: "Swiggy Instamart MCP tools"
+    endpoints:
+      apply_coupon:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Swiggy Instamart (Grocery): Apply a coupon code to the current Instamart cart"
+        body:
+          - name: couponCode
+            type: string
+            required: true
+            description: "REQUIRED: The coupon code to apply (e.g. \"SAVE100\", \"FREEDEL\"). Case-insensitive — will be uppercased automatically."
+        response:
+          type: object
+      check_payment_status:
+        method: POST
+        path: "/im"
+        description: "Check one payment-status iteration for an in-flight UPI payment"
+        body:
+          - name: paasId
+            type: string
+            required: true
+            description: "The payment TRANSACTION id from the place-order/checkout response (response field \"paasId\", e.g. a long numeric/alphanumeric id). NOT the payment-method name — never pass \"PayWithQR\", \"UPI\", \"UPIIntent\", or an app package id here. If you do not have a real paasId, do not call this tool; re-read the checkout response which contains paasId + orderId."
+          - name: orderId
+            type: string
+            required: false
+            description: "Order ID from the place-order or checkout response. Pass it when the tool response included an order ID."
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: cartId
+            type: string
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: lat
+            type: float
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: lng
+            type: float
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+        response:
+          type: object
+      checkout:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Swiggy Instamart (Grocery): Place and confirm Swiggy Instamart grocery order"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "Delivery address ID (from get_addresses - user must have selected this address)"
+          - name: paymentMethod
+            type: string
+            required: false
+            description: "Payment method GROUP, not an app id. Use one of: \"UPI\", \"Cash\"/\"COD\", \"SwiggyPay\". For a UPI app selection pass paymentMethod=\"UPI\" and put the app id in `intentApp` — do NOT put the app id (e.g. \"gpay://upi/\") here. Use the method the user selected. Auto-defaults to the user's available method if omitted."
+          - name: intentApp
+            type: string
+            required: false
+            description: "The selected UPI app id (e.g. \"gpay://upi/\"), copied EXACTLY from the chosen UPI method id. Only set this together with paymentMethod=\"UPI\". Leave blank for Cash/COD/QR."
+          - name: generateUPIQR
+            type: bool
+            required: false
+            description: "Optional advanced parameter. Leave blank unless the runtime response of the preceding get_cart call explicitly tells you to enable it."
+        response:
+          type: object
+      clear_cart:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Clear (remove all items from) the Instamart cart"
+        response:
+          type: object
+      confirm_order:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Complete an order after payment succeeds"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "Order ID returned by the place-order tool."
+          - name: transactionId
+            type: string
+            required: false
+            description: "Transaction ID returned by the place-order tool (IM/Dineout only)."
+          - name: paasId
+            type: string
+            required: true
+            description: "Payment transaction ID returned by the place-order tool (IM/Dineout only)."
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only; not used by Instamart confirmation."
+          - name: cartId
+            type: string
+            required: false
+            description: "Food only; not used by Instamart confirmation."
+          - name: lat
+            type: float
+            required: false
+            description: "Food only; not used by Instamart confirmation."
+          - name: lng
+            type: float
+            required: false
+            description: "Food only; not used by Instamart confirmation."
+        response:
+          type: object
+      create_address:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Swiggy (Instamart/Food): Create a new delivery address for the authenticated user."
+        body:
+          - name: fullAddress
+            type: string
+            required: true
+            description: "Complete address as provided by the user"
+          - name: addressLine
+            type: string
+            required: true
+            description: "Main street/building/house number (REQUIRED)"
+          - name: addressLine2
+            type: string
+            required: true
+            description: "Apartment, floor, wing, or additional details (REQUIRED - extract from full address, use empty string \"\" if not found)"
+          - name: locality
+            type: string
+            required: false
+            description: "Area, neighborhood, or locality name (optional)"
+          - name: city
+            type: string
+            required: true
+            description: "City name (REQUIRED)"
+          - name: postalCode
+            type: string
+            required: true
+            description: "Postal/ZIP code (REQUIRED)"
+          - name: latitude
+            type: float
+            required: false
+            description: "Latitude coordinate of the address (optional — the server will geocode from the address if omitted)"
+          - name: longitude
+            type: float
+            required: false
+            description: "Longitude coordinate of the address (optional — the server will geocode from the address if omitted)"
+          - name: addressCategory
+            type: string
+            required: true
+            description: "Type of address: HOME, WORK, OFFICE, FRIENDS_AND_FAMILY, or OTHER (REQUIRED)"
+            enum: ["HOME", "WORK", "OFFICE", "FRIENDS_AND_FAMILY", "OTHER"]
+          - name: addressTag
+            type: string
+            required: false
+            description: "Friendly name/label for the address (e.g., \"My Home\", \"Office\", \"Mom's Place\") (optional)"
+          - name: userName
+            type: string
+            required: true
+            description: "Account holder name (authenticated user) (REQUIRED)"
+          - name: userPhone
+            type: string
+            required: true
+            description: "Account holder phone number (authenticated user) (REQUIRED)"
+          - name: receiverName
+            type: string
+            required: false
+            description: "Receiver name if delivering to someone else (optional)"
+          - name: receiverPhone
+            type: string
+            required: false
+            description: "Receiver phone if delivering to someone else (optional)"
+        response:
+          type: object
+      delete_address:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Swiggy (Instamart/Food): Delete a saved delivery address for the authenticated user."
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "The ID of the address to delete (from get_addresses response)"
+        response:
+          type: object
+      get_addresses:
+        method: POST
+        path: "/im"
+        description: "Swiggy (Instamart/Food): Get saved delivery addresses for the authenticated Swiggy user, sorted by last order date (most recent first)"
+        body:
+          - name: page
+            type: float
+            required: false
+            description: "Page number for pagination, 1-based (default: 1)"
+          - name: pageSize
+            type: float
+            required: false
+            description: "Number of addresses per page (default: 10, max: 10)"
+        response:
+          type: object
+      get_cart:
+        method: POST
+        path: "/im"
+        description: "Swiggy Instamart (Grocery): Get current Swiggy Instamart grocery cart with all items and bill breakdown"
+        response:
+          type: object
+      get_delivery_status:
+        method: POST
+        path: "/im"
+        description: "## Usage notes  - Use for structured delivery ETA refreshes after an Instamart order is placed. - Do not call in a tight loop"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "Order ID to fetch the delivery ETA for (required)."
+          - name: addressId
+            type: string
+            required: true
+            description: "Delivery address ID for the order (required; coords resolved automatically)."
+        response:
+          type: object
+      get_order_details:
+        method: POST
+        path: "/im"
+        description: "Get detailed information for a specific Swiggy Instamart order by order ID"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "The order ID to fetch details for (required). Can be obtained from get_orders tool."
+        response:
+          type: object
+      get_orders:
+        method: POST
+        path: "/im"
+        description: "Swiggy Instamart order history - Use this to fetch ORDER HISTORY, past orders, or order preferences"
+        body:
+          - name: count
+            type: float
+            required: false
+            description: "Number of orders to fetch (default: 10, max recommended: 20)"
+          - name: orderType
+            type: string
+            required: false
+            description: "Order type filter (e.g., \"DASH\", \"INSTAMART\"). Default: \"DASH\""
+          - name: activeOnly
+            type: bool
+            required: false
+            description: "Set to true to filter only active/ongoing orders. Default: false (returns all orders)"
+        response:
+          type: object
+      get_payment_options:
+        method: POST
+        path: "/im"
+        description: "Fetch the live payment methods currently available for the cart"
+        body:
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only: pass the same addressId you used for get_food_cart. It is echoed back so the payment picker can place the order directly. Recommended for Food UPI."
+        response:
+          type: object
+      list_coupons:
+        method: POST
+        path: "/im"
+        description: "Swiggy Instamart (Grocery): List available coupons for the current cart"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "REQUIRED: Delivery address ID from get_addresses. Used to determine location-specific coupon availability."
+        response:
+          type: object
+      report_error:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Generate an error report to share with the Swiggy MCP team"
+        body:
+          - name: tool
+            type: string
+            required: true
+            description: "Name of the tool that errored (e.g., \"checkout\", \"search_products\", \"place_food_order\")"
+          - name: domain
+            type: string
+            required: false
+            description: "MCP server name where the error occurred (e.g., \"im\", \"food\", \"dineout\"). Auto-detected if not provided."
+          - name: errorMessage
+            type: string
+            required: true
+            description: "The error message the user saw"
+          - name: flowDescription
+            type: string
+            required: false
+            description: "Brief description of what the user was doing (e.g., \"searched for milk → added to cart → checkout failed\")"
+          - name: toolContext
+            type: string
+            required: false
+            description: "Key-value pairs of identifiers from the failed tool call. Include ALL relevant IDs such as: orderId, restaurantId, addressId, spinId, menu_item_id, couponCode, query, cartId, slotId, paymentMethod, guestCount, itemId — whichever were part of the request that failed."
+          - name: userNotes
+            type: string
+            required: false
+            description: "Any additional notes or context the user wants to share"
+        response:
+          type: object
+      search_products:
+        method: POST
+        path: "/im"
+        description: "Search for products available at the selected address"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "REQUIRED: Address ID obtained from get_addresses tool. You MUST call get_addresses first to get this value. Do NOT invent or guess addressId values."
+          - name: query
+            type: string
+            required: true
+            description: "REQUIRED: Search query (product name, category, or brand). Cannot be empty."
+          - name: offset
+            type: float
+            required: false
+            description: "Pagination offset (default: 0)"
+        response:
+          type: object
+      track_order:
+        method: POST
+        path: "/im"
+        description: "Track Swiggy Instamart order status in real-time"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "The order ID to track (required). Can be obtained from get_orders tool."
+          - name: lat
+            type: float
+            required: true
+            description: "Latitude of the delivery address (required for accurate tracking)"
+          - name: lng
+            type: float
+            required: true
+            description: "Longitude of the delivery address (required for accurate tracking)"
+        response:
+          type: object
+      update_cart:
+        method: POST
+        path: "/im"
+        mutation: true
+        description: "Swiggy Instamart (Grocery): Update Swiggy Instamart grocery cart with items"
+        body:
+          - name: selectedAddressId
+            type: string
+            required: true
+            description: "Selected delivery address ID from get_addresses tool"
+          - name: items
+            type: string
+            required: true
+            description: "Array of items to add to cart"
+        response:
+          type: object
+      your_go_to_items:
+        method: POST
+        path: "/im"
+        description: "Fetch the user's Your Go To Items (frequently or recently ordered items) for the selected delivery address"
+        body:
+          - name: addressId
+            type: string
+            required: true
+            description: "Address ID from get_addresses tool"
+          - name: offset
+            type: float
+            required: false
+            description: "Pagination offset (default: 0)"
+        response:
+          type: object
+
+  dineout:
+    description: "Swiggy Dineout MCP tools"
+    endpoints:
+      book_table:
+        method: POST
+        path: "/dineout"
+        mutation: true
+        description: "Swiggy Dineout (Reservations): Book a table at a restaurant for a specific time slot"
+        body:
+          - name: restaurantId
+            type: string
+            required: true
+            description: "Restaurant ID"
+          - name: slotId
+            type: float
+            required: true
+            description: "Slot ID from selected slot (slot.deals[].slotId)"
+          - name: itemId
+            type: string
+            required: true
+            description: "Deal/ticket item ID (slot.deals[].itemId, format: \"restaurantId-ticketId\")"
+          - name: reservationTime
+            type: float
+            required: true
+            description: "Unix timestamp from selected slot (slot.reservationTime)"
+          - name: guestCount
+            type: float
+            required: true
+            description: "Number of guests (1-20)"
+          - name: latitude
+            type: float
+            required: true
+            description: "Latitude from user address"
+          - name: longitude
+            type: float
+            required: true
+            description: "Longitude from user address"
+          - name: paymentMethod
+            type: string
+            required: false
+            description: "Omit (or \"Cash\") for FREE reservations. Use \"UPI\" for paid prebook deals (also pass cartKey + intentApp)."
+            enum: ["Cash", "UPI"]
+          - name: cartKey
+            type: string
+            required: false
+            description: "Paid UPI prebook only: cartKey returned by create_cart (DEAL_TICKET_PURCHASE)."
+          - name: intentApp
+            type: string
+            required: false
+            description: "Paid UPI prebook only: the UPI app id chosen from get_payment_options. Omit when generateUPIQR=true."
+          - name: generateUPIQR
+            type: bool
+            required: false
+            description: "Paid UPI prebook on desktop: true for a scannable QR instead of an app intent."
+        response:
+          type: object
+      cancel_booking:
+        method: POST
+        path: "/dineout"
+        mutation: true
+        description: "Swiggy Dineout (Reservations): Cancel an existing table reservation by orderId"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "The order ID of the booking to cancel (from book_table response)."
+          - name: cancellationReason
+            type: string
+            required: false
+            description: "Optional short reason for cancellation (e.g., \"plan changed\", \"wrong restaurant\"). Not shown to the user."
+        response:
+          type: object
+      check_payment_status:
+        method: POST
+        path: "/dineout"
+        description: "Check one payment-status iteration for an in-flight UPI payment"
+        body:
+          - name: paasId
+            type: string
+            required: true
+            description: "The payment TRANSACTION id from the place-order/checkout response (response field \"paasId\", e.g. a long numeric/alphanumeric id). NOT the payment-method name — never pass \"PayWithQR\", \"UPI\", \"UPIIntent\", or an app package id here. If you do not have a real paasId, do not call this tool; re-read the checkout response which contains paasId + orderId."
+          - name: orderId
+            type: string
+            required: false
+            description: "Order ID from the place-order or checkout response. Pass it when the tool response included an order ID."
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: cartId
+            type: string
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: lat
+            type: float
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+          - name: lng
+            type: float
+            required: false
+            description: "Food only: echo from place_food_order — passed through for auto-confirm."
+        response:
+          type: object
+      confirm_order:
+        method: POST
+        path: "/dineout"
+        mutation: true
+        description: "Complete an order after payment succeeds"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "Order ID returned by the place-order tool."
+          - name: transactionId
+            type: string
+            required: false
+            description: "Transaction ID returned by the place-order tool (IM/Dineout only)."
+          - name: paasId
+            type: string
+            required: true
+            description: "Payment transaction ID returned by the place-order tool (IM/Dineout only)."
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only; not used by Dineout confirmation."
+          - name: cartId
+            type: string
+            required: false
+            description: "Food only; not used by Dineout confirmation."
+          - name: lat
+            type: float
+            required: false
+            description: "Food only; not used by Dineout confirmation."
+          - name: lng
+            type: float
+            required: false
+            description: "Food only; not used by Dineout confirmation."
+        response:
+          type: object
+      create_cart:
+        method: POST
+        path: "/dineout"
+        mutation: true
+        description: "Swiggy Dineout (Reservations): Create a booking cart"
+        body:
+          - name: restaurantId
+            type: string
+            required: true
+            description: "Restaurant ID"
+          - name: cartType
+            type: string
+            required: true
+            description: "Cart type: DEAL_TICKET_PURCHASE for booking, DINEOUT for bill payment"
+            enum: ["DEAL_TICKET_PURCHASE", "DINEOUT"]
+          - name: latitude
+            type: float
+            required: true
+            description: "Latitude"
+          - name: longitude
+            type: float
+            required: true
+            description: "Longitude"
+          - name: slotId
+            type: float
+            required: true
+            description: "Slot ID (required for booking cart)"
+          - name: itemId
+            type: string
+            required: true
+            description: "Item ID (required for booking cart, format: \"restaurantId-ticketId\")"
+          - name: reservationTime
+            type: float
+            required: true
+            description: "Unix timestamp (required for booking cart)"
+          - name: guestCount
+            type: float
+            required: true
+            description: "Number of guests (required for booking cart, 1-20)"
+          - name: billAmount
+            type: float
+            required: true
+            description: "Bill amount in rupees (required for bill payment cart)"
+          - name: source
+            type: string
+            required: false
+            description: "Source for bill payment cart (default: \"direct-payment-cart\")"
+        response:
+          type: object
+      get_available_slots:
+        method: POST
+        path: "/dineout"
+        description: "Swiggy Dineout (Reservations): Check available time slots for TABLE BOOKING at a restaurant"
+        example: "  swiggy-pp-cli dineout get-available-slots --restaurant-id r_456 --date 2026-09-20 --latitude 28.4595 --longitude 77.0266"
+        body:
+          - name: restaurantId
+            type: string
+            required: true
+            description: "Restaurant ID from search or details"
+          - name: date
+            type: string
+            required: true
+            description: "Starting date as YYYY-MM-DD string (e.g., \"2026-04-20\") or epoch timestamp as numeric string (e.g., \"1735689600\"). Returns slots for up to 7 days from this date."
+          - name: latitude
+            type: float
+            required: true
+            description: "User's latitude"
+          - name: longitude
+            type: float
+            required: true
+            description: "User's longitude"
+        response:
+          type: object
+      get_booking_status:
+        method: POST
+        path: "/dineout"
+        description: "Swiggy Dineout (Reservations): Get booking status and details for a dineout reservation"
+        body:
+          - name: orderId
+            type: string
+            required: true
+            description: "Order ID from booking confirmation"
+        response:
+          type: object
+      get_payment_options:
+        method: POST
+        path: "/dineout"
+        description: "Fetch the live payment methods currently available for the cart"
+        body:
+          - name: addressId
+            type: string
+            required: false
+            description: "Food only: pass the same addressId you used for get_food_cart. It is echoed back so the payment picker can place the order directly. Recommended for Food UPI."
+        response:
+          type: object
+      get_restaurant_details:
+        method: POST
+        path: "/dineout"
+        description: "Swiggy Dineout (Reservations): Get details about a specific restaurant for TABLE BOOKING"
+        body:
+          - name: restaurantId
+            type: string
+            required: true
+            description: "Restaurant ID from search results"
+          - name: latitude
+            type: float
+            required: true
+            description: "Latitude (use same as search)"
+          - name: longitude
+            type: float
+            required: true
+            description: "Longitude (use same as search)"
+        response:
+          type: object
+      get_saved_locations:
+        method: POST
+        path: "/dineout"
+        description: "Swiggy Dineout (Reservations): Get user's saved addresses for restaurant search"
+        response:
+          type: object
+      report_error:
+        method: POST
+        path: "/dineout"
+        mutation: true
+        description: "Generate an error report to share with the Swiggy MCP team"
+        body:
+          - name: tool
+            type: string
+            required: true
+            description: "Name of the tool that errored (e.g., \"checkout\", \"search_products\", \"place_food_order\")"
+          - name: domain
+            type: string
+            required: false
+            description: "MCP server name where the error occurred (e.g., \"im\", \"food\", \"dineout\"). Auto-detected if not provided."
+          - name: errorMessage
+            type: string
+            required: true
+            description: "The error message the user saw"
+          - name: flowDescription
+            type: string
+            required: false
+            description: "Brief description of what the user was doing (e.g., \"searched for milk → added to cart → checkout failed\")"
+          - name: toolContext
+            type: string
+            required: false
+            description: "Key-value pairs of identifiers from the failed tool call. Include ALL relevant IDs such as: orderId, restaurantId, addressId, spinId, menu_item_id, couponCode, query, cartId, slotId, paymentMethod, guestCount, itemId — whichever were part of the request that failed."
+          - name: userNotes
+            type: string
+            required: false
+            description: "Any additional notes or context the user wants to share"
+        response:
+          type: object
+      search_restaurants_dineout:
+        method: POST
+        path: "/dineout"
+        description: "Swiggy Dineout (Reservations): find restaurants to BOOK A TABLE at"
+        body:
+          - name: query
+            type: string
+            required: true
+            description: "What to search for: a restaurant name, cuisine, area, kind of place (cafe, pub, brewery), or vibe (rooftop, buffet, live music). One term, not a sentence, and no location words when latitude/longitude already cover the location."
+          - name: entityType
+            type: string
+            required: false
+            description: "Rarely needed. The search already works out whether the query is a cuisine, area, category or vibe. Set this only to force a specific interpretation of an ambiguous term."
+            enum: ["locality", "CUISINE", "RESTAURANT_CATEGORY", "ambience_tags"]
+          - name: addressId
+            type: string
+            required: false
+            description: "Address ID from get_saved_locations. Coordinates are resolved automatically. Use this instead of latitude/longitude when searching near a saved address."
+          - name: latitude
+            type: float
+            required: false
+            description: "Latitude for search. Use for direct city/area searches. Not needed if addressId is provided."
+          - name: longitude
+            type: float
+            required: false
+            description: "Longitude for search. Use for direct city/area searches. Not needed if addressId is provided."
+          - name: limit
+            type: float
+            required: false
+            description: "Max restaurants to return. Default 10, max 30."
+          - name: offset
+            type: float
+            required: false
+            description: "Restaurants to skip. Use the offset given in the previous response to show more of the same search."
+        response:
+          type: object

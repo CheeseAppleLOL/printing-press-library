@@ -1,0 +1,183 @@
+{
+  "api_name": "swiggy",
+  "novelty_score": 8,
+  "alternatives": [
+    {
+      "name": "swiggy-analytics",
+      "url": "https://github.com/mr-karan/swiggy-analytics",
+      "language": "Python",
+      "install_method": "",
+      "stars": 0,
+      "last_updated": "",
+      "command_count": 1,
+      "has_json_output": false,
+      "has_auth_support": false
+    }
+  ],
+  "gaps": [],
+  "patterns": [],
+  "recommendation": "proceed",
+  "researched_at": "2026-09-13T06:36:00Z",
+  "novel_features": [
+    {
+      "name": "Cross-domain spend/order history",
+      "command": "history",
+      "description": "See total spend and order counts across Food and Instamart in one view, even though Swiggy keeps them completely separate. Dineout has no orders-list tool and is not included.",
+      "rationale": "Requires joining locally-cached order/booking rows from three independently-siloed MCP servers that share no data on Swiggy's side.",
+      "example": "swiggy-pp-cli history --address-id addr_01HXYZ --agent",
+      "why_it_matters": "Reach for this when the user asks about overall Swiggy spend or activity rather than a single domain's orders.",
+      "group": "Local state that compounds"
+    },
+    {
+      "name": "Unified UPI payment wait",
+      "command": "pay wait",
+      "description": "Block until a UPI payment resolves instead of hand-rolling a polling loop yourself. Not for COD orders — check payment status once and proceed instead.",
+      "rationale": "Wraps the documented long-poll `check_payment_status` contract (server holds ~19s) with backoff and a terminal-state exit, shared across all three servers.",
+      "example": "swiggy-pp-cli pay wait --paas-id paas_123 --order-id ord_01HXYZ --domain food --max-wait 5s",
+      "why_it_matters": "Use this immediately after any UPI place-order/checkout/book-table call; do not poll check-payment-status manually.",
+      "group": "Agent-native plumbing"
+    },
+    {
+      "name": "Safe retry after failed order placement",
+      "command": "order verify-before-retry",
+      "description": "Check whether a food or grocery order actually went through before retrying a failed placement.",
+      "rationale": "`place_food_order`/`checkout` are explicitly documented as not idempotent; this command reconciles against real order history so retries never risk a duplicate order.",
+      "example": "swiggy-pp-cli order verify-before-retry --domain food --address-id addr_01HXYZ --amount 450",
+      "why_it_matters": "Use this before ever re-issuing place-food-order or checkout after a 5xx or timeout.",
+      "group": "Reachability mitigation"
+    },
+    {
+      "name": "Auth/session health check",
+      "command": "status",
+      "description": "See at a glance whether your Swiggy login is still valid and which domain sessions are active.",
+      "rationale": "Reads the CLI's own stored OAuth token expiry and per-domain MCP session cache — no other Swiggy tool exposes this.",
+      "example": "swiggy-pp-cli status",
+      "why_it_matters": "Check this before starting a multi-step order flow to avoid a mid-flow 401.",
+      "group": "Agent-native plumbing"
+    }
+  ],
+  "novel_features_built": [
+    {
+      "name": "Cross-domain spend/order history",
+      "command": "history",
+      "description": "See total spend and order counts across Food and Instamart in one view, even though Swiggy keeps them completely separate. Dineout has no orders-list tool and is not included.",
+      "rationale": "Requires joining locally-cached order/booking rows from three independently-siloed MCP servers that share no data on Swiggy's side.",
+      "example": "swiggy-pp-cli history --address-id addr_01HXYZ --agent",
+      "why_it_matters": "Reach for this when the user asks about overall Swiggy spend or activity rather than a single domain's orders.",
+      "group": "Local state that compounds"
+    },
+    {
+      "name": "Unified UPI payment wait",
+      "command": "pay wait",
+      "description": "Block until a UPI payment resolves instead of hand-rolling a polling loop yourself. Not for COD orders — check payment status once and proceed instead.",
+      "rationale": "Wraps the documented long-poll `check_payment_status` contract (server holds ~19s) with backoff and a terminal-state exit, shared across all three servers.",
+      "example": "swiggy-pp-cli pay wait --paas-id paas_123 --order-id ord_01HXYZ --domain food --max-wait 5s",
+      "why_it_matters": "Use this immediately after any UPI place-order/checkout/book-table call; do not poll check-payment-status manually.",
+      "group": "Agent-native plumbing"
+    },
+    {
+      "name": "Safe retry after failed order placement",
+      "command": "order verify-before-retry",
+      "description": "Check whether a food or grocery order actually went through before retrying a failed placement.",
+      "rationale": "`place_food_order`/`checkout` are explicitly documented as not idempotent; this command reconciles against real order history so retries never risk a duplicate order.",
+      "example": "swiggy-pp-cli order verify-before-retry --domain food --address-id addr_01HXYZ --amount 450",
+      "why_it_matters": "Use this before ever re-issuing place-food-order or checkout after a 5xx or timeout.",
+      "group": "Reachability mitigation"
+    },
+    {
+      "name": "Auth/session health check",
+      "command": "status",
+      "description": "See at a glance whether your Swiggy login is still valid and which domain sessions are active.",
+      "rationale": "Reads the CLI's own stored OAuth token expiry and per-domain MCP session cache — no other Swiggy tool exposes this.",
+      "example": "swiggy-pp-cli status",
+      "why_it_matters": "Check this before starting a multi-step order flow to avoid a mid-flow 401.",
+      "group": "Agent-native plumbing"
+    }
+  ],
+  "auth": {
+    "canonical_env_var": "SWIGGY_ACCESS_TOKEN"
+  },
+  "narrative": {
+    "display_name": "Swiggy",
+    "headline": "Every Swiggy Builders Club tool, one persistent OAuth session, and a local order history no Swiggy surface shows you.",
+    "value_prop": "Wraps all 51 official Swiggy MCP tools across Food, Instamart, and Dineout into one CLI that respects Swiggy's own session-reuse rules instead of tripping rate limits. Adds cross-domain spend history, a safe-retry guard for non-idempotent order placement,.",
+    "auth_narrative": "Swiggy Builders Club uses OAuth 2.1 with PKCE and Dynamic Client Registration — no API key. Run `swiggy-pp-cli auth login` to open a browser, log in with your phone number and OTP on Swiggy's own consent screen, and the CLI stores the resulting 5-day access token. There is no refresh token in v1.0; re-run `auth login` when it expires.",
+    "quickstart": [
+      {
+        "command": "swiggy-pp-cli doctor --dry-run",
+        "comment": "Health check that works without auth — confirms the binary and config are set up before logging in."
+      },
+      {
+        "command": "swiggy-pp-cli auth login",
+        "comment": "Complete the OAuth 2.1 PKCE browser login (phone + OTP) once; the CLI persists the session."
+      },
+      {
+        "command": "swiggy-pp-cli food get-addresses",
+        "comment": "First real call — confirms the session works and gives you an addressId for search."
+      },
+      {
+        "command": "swiggy-pp-cli food search-restaurants --address-id addr_01HXYZ --query biryani",
+        "comment": "Search restaurants near a saved address."
+      },
+      {
+        "command": "swiggy-pp-cli history --address-id addr_01HXYZ --agent",
+        "comment": "See cross-domain (Food + Instamart) spend once you have some order history."
+      }
+    ],
+    "troubleshoots": [
+      {
+        "symptom": "401 on every call",
+        "fix": "Run `swiggy-pp-cli auth login` again — access tokens expire after 5 days and v1.0 has no refresh token."
+      },
+      {
+        "symptom": "place-food-order failed with a 5xx and you're unsure if it placed",
+        "fix": "Run `swiggy-pp-cli order verify-before-retry` before retrying — place-food-order is not idempotent."
+      },
+      {
+        "symptom": "429 / rate limited",
+        "fix": "Stop retrying immediately; the CLI reuses one persistent session per domain by design, but concurrent multi-domain commands can still add up — space out calls across food/instamart/dineout."
+      },
+      {
+        "symptom": "UPI payment stuck in PENDING_PAYMENT",
+        "fix": "Run `swiggy-pp-cli pay wait --paas-id paas_123 --order-id ord_01HXYZ --domain food` (swap --domain for instamart/dineout as needed) to long-poll to a terminal state instead of polling manually."
+      }
+    ],
+    "when_to_use": "Use this CLI for scripted or agent-driven Swiggy commerce flows: searching restaurants/products, managing carts, placing orders, booking tables, and tracking deliveries/bookings across Food, Instamart, and Dineout. Good for building or debugging an agent on top of Swiggy Builders Club before wiring a full agent framework, or for personal automation of routine orders.",
+    "anti_triggers": [
+      "Do not use this CLI for Swiggy's consumer web/app features outside the Builders Club MCP surface (e.g. loyalty program management, customer support chat).",
+      "Do not use this CLI for production-scale/multi-tenant traffic without applying for production access at mcp.swiggy.com/builders/access — this CLI targets a single authenticated user's own account.",
+      "Do not use this CLI to exceed the ₹1000 Food cart cap or bypass Swiggy's documented rate limits."
+    ],
+    "recipes": [
+      {
+        "title": "Order food end-to-end",
+        "command": "swiggy-pp-cli food search-restaurants --address-id addr_01HXYZ --query biryani \u0026\u0026 swiggy-pp-cli food get-restaurant-menu --address-id addr_01HXYZ --restaurant-id r_123 --select restaurantId,items.id,items.name,items.price",
+        "explanation": "Search then narrow a large menu payload down to just the fields needed to build a cart."
+      },
+      {
+        "title": "Book a table",
+        "command": "swiggy-pp-cli dineout get-available-slots --restaurant-id r_456 --date 2026-09-20 --latitude 28.4595 --longitude 77.0266",
+        "explanation": "Check slot availability before booking."
+      },
+      {
+        "title": "Safe retry after a failed order",
+        "command": "swiggy-pp-cli order verify-before-retry --domain food --address-id addr_01HXYZ --restaurant-id r_123 --amount 450",
+        "explanation": "Confirms whether a non-idempotent place-food-order call actually succeeded before retrying."
+      },
+      {
+        "title": "Check spend across Food and Instamart",
+        "command": "swiggy-pp-cli history --address-id addr_01HXYZ --agent --select total_spend,order_count,by_domain",
+        "explanation": "Cross-domain aggregation (Food + Instamart; Dineout has no orders-list tool) with a narrowed agent-friendly field selection. --address-id is required to include Food."
+      }
+    ],
+    "trigger_phrases": [
+      "order food on Swiggy",
+      "search Swiggy restaurants",
+      "order groceries on Instamart",
+      "book a table on Dineout",
+      "track my Swiggy order",
+      "use swiggy",
+      "run swiggy"
+    ]
+  }
+}

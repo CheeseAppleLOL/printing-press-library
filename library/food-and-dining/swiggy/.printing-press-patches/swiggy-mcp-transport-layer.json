@@ -1,0 +1,32 @@
+{
+  "schema_version": 2,
+  "id": "swiggy-mcp-transport-layer",
+  "applied_at": "2026-09-13",
+  "base_run_id": "20260913-115332-8cbd64e9",
+  "base_printing_press_version": "4.32.1",
+  "summary": "Added a hand-written JSON-RPC/MCP transport wrapper (internal/client/mcp_envelope.go) and routed all 51 generated tool commands through it instead of the generated client's raw Post/PostQueryWithParams calls.",
+  "reason": "Swiggy Builders Club is a genuine MCP server (JSON-RPC 2.0 over HTTP, tools/call envelope), not a REST API. cli-printing-press has no native MCP/JSON-RPC generation support (generate --spec assumes one HTTP verb+path = one REST operation), so every tool call needs hand-written envelope wrap/unwrap plus an Accept: application/json, text/event-stream header the generator does not add by default.",
+  "files": [
+    "internal/client/mcp_envelope.go",
+    "internal/cli/food_apply_food_coupon.go", "internal/cli/food_check_payment_status.go", "internal/cli/food_confirm_order.go",
+    "internal/cli/food_create_address.go", "internal/cli/food_delete_address.go", "internal/cli/food_fetch_food_coupons.go",
+    "internal/cli/food_flush_food_cart.go", "internal/cli/food_get_addresses.go", "internal/cli/food_get_food_cart.go",
+    "internal/cli/food_get_food_delivery_status.go", "internal/cli/food_get_food_order_details.go", "internal/cli/food_get_food_orders.go",
+    "internal/cli/food_get_payment_options.go", "internal/cli/food_get_restaurant_menu.go", "internal/cli/food_place_food_order.go",
+    "internal/cli/food_report_error.go", "internal/cli/food_search_menu.go", "internal/cli/food_search_restaurants.go",
+    "internal/cli/food_track_food_order.go", "internal/cli/food_update_food_cart.go",
+    "internal/cli/instamart_apply_coupon.go", "internal/cli/instamart_check_payment_status.go", "internal/cli/instamart_checkout.go",
+    "internal/cli/instamart_clear_cart.go", "internal/cli/instamart_confirm_order.go", "internal/cli/instamart_create_address.go",
+    "internal/cli/instamart_delete_address.go", "internal/cli/instamart_get_addresses.go", "internal/cli/instamart_get_cart.go",
+    "internal/cli/instamart_get_delivery_status.go", "internal/cli/instamart_get_order_details.go", "internal/cli/instamart_get_orders.go",
+    "internal/cli/instamart_get_payment_options.go", "internal/cli/instamart_list_coupons.go", "internal/cli/instamart_report_error.go",
+    "internal/cli/instamart_search_products.go", "internal/cli/instamart_track_order.go", "internal/cli/instamart_update_cart.go",
+    "internal/cli/instamart_your_go_to_items.go",
+    "internal/cli/dineout_book_table.go", "internal/cli/dineout_cancel_booking.go", "internal/cli/dineout_check_payment_status.go",
+    "internal/cli/dineout_confirm_order.go", "internal/cli/dineout_create_cart.go", "internal/cli/dineout_get_available_slots.go",
+    "internal/cli/dineout_get_booking_status.go", "internal/cli/dineout_get_payment_options.go", "internal/cli/dineout_get_restaurant_details.go",
+    "internal/cli/dineout_get_saved_locations.go", "internal/cli/dineout_report_error.go", "internal/cli/dineout_search_restaurants_dineout.go"
+  ],
+  "validated_outcome": "go build/vet/test clean; live dogfood full matrix 165/165 against production; get-addresses, search-restaurants, get-cart, history, status all verified against real Swiggy account data.",
+  "upstream_issue": null
+}

@@ -1,0 +1,39 @@
+{
+  "manifest_version": "0.3",
+  "name": "swiggy-pp-mcp",
+  "display_name": "Swiggy",
+  "version": "0.1.0",
+  "description": "Every Swiggy Builders Club tool, one persistent OAuth session, and a local order history no Swiggy surface shows you.",
+  "author": {
+    "name": "CLI Printing Press"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "binary",
+    "entry_point": "bin/swiggy-pp-mcp",
+    "mcp_config": {
+      "command": "${__dirname}/bin/swiggy-pp-mcp",
+      "args": [],
+      "env": {
+        "SWIGGY_ACCESS_TOKEN": "${user_config.swiggy_access_token}"
+      }
+    }
+  },
+  "user_config": {
+    "swiggy_access_token": {
+      "type": "string",
+      "title": "SWIGGY_ACCESS_TOKEN",
+      "description": "Sets SWIGGY_ACCESS_TOKEN for the Swiggy MCP server.",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=1.0.0",
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ]
+  }
+}
