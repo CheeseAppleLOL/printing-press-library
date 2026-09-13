@@ -2,6 +2,10 @@
 
 This file is maintained by printing-press-library release automation. Do not hand-edit release sections in normal PRs.
 
+## 2026.9.5 - 2026-09-13
+
+- feat(ars-sicilia): resoconti get answers with the /bd/ scheda, its blocks, and the sitting text (#1992).
+
 ## 2026.9.4 - 2026-09-11
 
 - fix: fail closed on ambiguous fleet write retries (#1978).

@@ -2,6 +2,10 @@
 
 This file is maintained by printing-press-library release automation. Do not hand-edit release sections in normal PRs.
 
+## 2026.9.9 - 2026-09-13
+
+- fix(peloton): response bloat, resumable pagination, and sync warning visibility (#1991).
+
 ## 2026.9.8 - 2026-09-12
 
 - fix(peloton): leftover from #1986 — companion binary diagnostic (#1989).
