@@ -96,3 +96,29 @@ func TestWhichIndex_ExistsAndIsWellFormed(t *testing.T) {
 		}
 	}
 }
+
+// Le query segnalate nella issue #7 devono risolvere sull'indice reale.
+func TestRankWhich_IndiceRealeComandiDiRicerca(t *testing.T) {
+	cases := map[string]string{
+		"ricerca full-text avvisi":                              "avvisi search",
+		"cerca corsi di formazione su intelligenza artificiale": "cerca",
+		"codice cpv":             "cpv search",
+		"trova bandi recenti":    "avvisi search",
+		"elenco delle tipologie": "tipologie list",
+	}
+	for q, want := range cases {
+		got := rankWhich(whichIndex, q, 3)
+		if len(got) == 0 || got[0].Entry.Command != want {
+			t.Errorf("which %q: want %s first, got %+v", q, want, got)
+		}
+	}
+}
+
+// Le sole parole vuote italiane non devono produrre un match.
+func TestRankWhich_ParoleVuoteItaliane(t *testing.T) {
+	for _, q := range []string{"per la", "chi ha vinto l'appalto"} {
+		if got := rankWhich(whichIndex, q, 3); len(got) != 0 {
+			t.Errorf("which %q: want no match, got %+v", q, got)
+		}
+	}
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 2,
+  "id": "anac-pl-scheda-numero-template",
+  "applied_at": "2026-09-13",
+  "base_run_id": "20260623-093040-ed91772a",
+  "base_printing_press_version": "4.17.0",
+  "summary": "Aiuto di `avvisi search --scheda` (CLI, MCP, spec.yaml): il valore e' il numero template della tipologia, non il codice scheda dei risultati.",
+  "reason": "L'esempio generato (AD3, P7_1_1, M1) fa rispondere HTTP 500 al servizio. Il portale, nella ricerca generica, invia codiceScheda=7 per gli esiti e 7,8a,9 per piu' tipologie.",
+  "files": [
+    "internal/cli/avvisi_search.go",
+    "internal/mcp/tools.go",
+    "spec.yaml"
+  ],
+  "validated_outcome": "Traffico del form del portale registrato: codiceScheda=7. Via API codiceScheda=AD3 e P7_1_1 rispondono 500; `--scheda 4` restituisce schede P1_16, P1_17, P1_20, `--scheda 7` A1_30."
+}

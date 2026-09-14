@@ -1,0 +1,17 @@
+{
+  "schema_version": 2,
+  "id": "anac-pl-mcp-validazione-avvisi",
+  "applied_at": "2026-09-13",
+  "base_run_id": "20260623-093040-ed91772a",
+  "base_printing_press_version": "4.17.0",
+  "summary": "Il tool MCP avvisi_search applica le verifiche di `avvisi search` (scheda per nome o template, un solo valore, ricerca esatta con tipologia) tramite cli.ValidaRicercaAvvisi.",
+  "reason": "L'handler MCP generato chiama l'API senza passare dal comando: `scheda` \"esiti\" (dichiarato valido nella descrizione), \"AD3\" e `fuzzy=false` senza tipologia arrivavano al servizio, che risponde 500.",
+  "files": [
+    "internal/mcp/tools.go",
+    "internal/mcp/avvisi_validazione.go",
+    "internal/mcp/avvisi_validazione_test.go",
+    "internal/cli/ricerca_validazione.go",
+    "internal/cli/avvisi_search.go"
+  ],
+  "validated_outcome": "Prima della modifica, via stdio, le tre chiamate rispondevano HTTP 500; dopo, `scheda` \"esiti\" restituisce esiti e le altre due un errore del tool senza chiamata all'API."
+}

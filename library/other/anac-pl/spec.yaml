@@ -33,7 +33,7 @@ resources:
           - name: codiceScheda
             flag_name: scheda
             type: string
-            description: "Filtra per codice scheda/tipologia avviso (es. AD3, P7_1_1, M1). Vedi 'tipologie map'"
+            description: "Tipologia avviso: numero template o nome di 'tipologie list' (es. 4 o bandi, 7 o esiti). Un solo valore; i codici dei risultati (AD3, A1_29) non sono accettati"
           - name: cpv
             flag_name: cpv
             type: string
@@ -59,7 +59,7 @@ resources:
           - name: sortField
             flag_name: sort-field
             type: string
-            description: "Campo di ordinamento (es. dataPubblicazione)"
+            description: "Campo di ordinamento (es. dataPubblicazione). Il servizio lo onora solo senza --query: con testo libero ordina per rilevanza"
           - name: sortDirection
             flag_name: sort-dir
             type: string
@@ -69,7 +69,7 @@ resources:
             flag_name: fuzzy
             type: bool
             default: true
-            description: "Abilita la ricerca fuzzy (tolleranza errori) lato motore di ricerca"
+            description: "true (default): termini in OR per rilevanza. false: frase esatta, parole adiacenti nell'ordine dato; richiede --scheda"
           - name: page
             type: int
             default: 0

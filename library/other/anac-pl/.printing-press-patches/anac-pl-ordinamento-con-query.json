@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "id": "anac-pl-ordinamento-con-query",
+  "applied_at": "2026-09-13",
+  "base_run_id": "20260623-093040-ed91772a",
+  "base_printing_press_version": "4.17.0",
+  "summary": "`cerca` e `avvisi search` avvisano su stderr quando --sort-field/--sort-dir sono passati insieme a --query; l'aiuto di --sort-field in `avvisi search`, nel tool MCP e in spec.yaml dice che con testo libero il servizio ordina per rilevanza; esempio README con --published-from.",
+  "reason": "Con testo libero ANAC ignora sortField/sortDirection: la richiesta li contiene ma l'ordine non cambia. Senza avviso l'utente legge come ordinati per data risultati che non lo sono. Il riordino lato client non e' un'alternativa, perche' ordinerebbe solo la pagina scelta per rilevanza; il filtro su dataPubblicazione invece il servizio lo applica. Issue #6.",
+  "files": [
+    "internal/cli/cerca.go",
+    "internal/cli/cerca_avanzata.go",
+    "internal/cli/avvisi_search.go",
+    "internal/cli/ordinamento_test.go",
+    "internal/mcp/tools.go",
+    "spec.yaml",
+    "README.md"
+  ],
+  "validated_outcome": "Con \"corso intelligenza artificiale\" l'ordine e' identico con e senza --sort-field dataPubblicazione --sort-dir DESC (parametri presenti nella richiesta, verificato con --dry-run); con --published-from 01/06/2026 tutti i 10 risultati sono di giugno-settembre 2026. L'avviso compare con --query + sort e non compare senza --query o senza sort."
+}

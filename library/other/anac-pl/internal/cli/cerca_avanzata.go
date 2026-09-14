@@ -278,6 +278,21 @@ func warnConteggioSottostimato(w io.Writer, total int64, size int, cpv string) {
 	fmt.Fprintf(w, "attenzione: il totale dichiarato da ANAC (%d) dipende da --size e può essere molto inferiore ai risultati realmente ottenibili; ripeti con --size 200 per un conteggio attendibile. L'insieme dei risultati resta corretto\n", total)
 }
 
+// warnOrdinamentoIgnorato segnala su stderr che, con testo libero, ANAC ordina
+// per rilevanza e ignora sortField/sortDirection: la richiesta li contiene ma
+// l'ordine dei risultati non cambia. Verificato il 13/09/2026 con
+// "corso intelligenza artificiale": stesso ordine con e senza
+// --sort-field dataPubblicazione --sort-dir DESC. Il riordino lato client non
+// è un'alternativa, perché ordinerebbe per data solo la pagina già scelta per
+// rilevanza; per limitare nel tempo resta il filtro sulla data, che il servizio
+// applica.
+func warnOrdinamentoIgnorato(w io.Writer, query, sortField, sortDir string) {
+	if strings.TrimSpace(query) == "" || (sortField == "" && sortDir == "") {
+		return
+	}
+	fmt.Fprintln(w, "avviso: con --query ANAC ordina per rilevanza e ignora --sort-field/--sort-dir. Per limitare ai più recenti usa --published-from")
+}
+
 // soloCodiciCompleti indica se il filtro CPV contiene esclusivamente codici a 8
 // cifre, gli unici per cui il conteggio del server è risultato affidabile.
 func soloCodiciCompleti(cpv string) bool {

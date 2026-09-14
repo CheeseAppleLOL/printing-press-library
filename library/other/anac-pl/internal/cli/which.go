@@ -30,6 +30,15 @@ var whichIndex = []whichEntry{
 	{Command: "sync", Description: "Scarica e conserva gli avvisi in un database SQLite locale per analisi offline.", Group: "Stato locale che si accumula", WhyItMatters: "Permette analisi ripetute e aggregazioni che l'API paginata non offre."},
 	{Command: "search-local", Description: "Cerca tra gli avvisi gia' sincronizzati in locale, senza rete.", Group: "Stato locale che si accumula", WhyItMatters: "Risposte istantanee e componibili con jq/SQL."},
 	{Command: "export", Description: "Esporta gli avvisi sincronizzati in CSV o JSON per fogli di calcolo e pipeline dati.", Group: "Stato locale che si accumula", WhyItMatters: "Porta i dati ANAC direttamente in strumenti di analisi."},
+	{Command: "cerca", Description: "Ricerca avvisi con filtri semplici (tipologia per nome, importo min/max, modalità)", Group: "cerca", WhyItMatters: "Ricerca avvisi con filtri semplici (tipologia per nome, importo min/max, modalità)"},                                     // pp:which-promoted
+	{Command: "cerca-avanzata", Description: "Ricerca avanzata: filtro CPV che seleziona davvero per codice (endpoint specializzato)", Group: "cerca", WhyItMatters: "Ricerca avanzata: filtro CPV che seleziona davvero per codice (endpoint specializzato)"},                    // pp:which-promoted
+	{Command: "affidamenti", Description: "Tabella appiattita degli affidamenti: committente, aggiudicatario, importo, CPV, giurisdizione", Group: "affidamenti", WhyItMatters: "Tabella appiattita degli affidamenti: committente, aggiudicatario, importo, CPV, giurisdizione"}, // pp:which-promoted
+	{Command: "cpv search", Description: "Cerca codici CPV per descrizione o per prefisso di codice", Group: "cpv", WhyItMatters: "Cerca codici CPV per descrizione o per prefisso di codice"},                                                                                    // pp:which-promoted
+	{Command: "avvisi search", Description: "Ricerca full-text di avvisi (bandi, esiti, altri avvisi) con ranking di rilevanza e filtri", Group: "avvisi", WhyItMatters: "Ricerca full-text di avvisi (bandi, esiti, altri avvisi) con ranking di rilevanza e filtri"},            // pp:which-promoted
+	{Command: "avvisi get", Description: "Dettaglio completo di un avviso/esito in formato JSON, incluse sezioni e committente", Group: "avvisi", WhyItMatters: "Dettaglio completo di un avviso/esito in formato JSON, incluse sezioni e committente"},                           // pp:which-promoted
+	{Command: "avvisi cronologia", Description: "Cronologia delle versioni/rettifiche di un avviso nel tempo", Group: "avvisi", WhyItMatters: "Cronologia delle versioni/rettifiche di un avviso nel tempo"},                                                                      // pp:which-promoted
+	{Command: "tipologie list", Description: "Elenca le tipologie di avviso con il valore di filtro da usare nella ricerca", Group: "tipologie", WhyItMatters: "Elenca le tipologie di avviso con il valore di filtro da usare nella ricerca"},                                    // pp:which-promoted
+	{Command: "news", Description: "Ultime news pubblicate sulla piattaforma", Group: "news", WhyItMatters: "Ultime news pubblicate sulla piattaforma"},                                                                                                                           // pp:which-promoted
 }
 
 // whichMatch pairs an index entry with its ranking score for a query.
@@ -47,8 +56,9 @@ type whichMatch struct {
 //
 //	+3  exact token match on the command's leaf or full path
 //	+2  substring match on the command (any part)
-//	+2  substring match on the description
-//	+1  group tag contains the query as a word
+//	+2  substring match on description or why_it_matters
+//	+1  per-token match on description or why_it_matters (capped at 3)
+//	+1  group tag contains the query as a whole token
 //
 // Ties break on declaration order in the index. An empty query returns
 // every entry at score 0 in declaration order - this is the "list all"
@@ -65,7 +75,9 @@ func rankWhich(index []whichEntry, query string, limit int) []whichMatch {
 		}
 		return out
 	}
-	qTokens := strings.Fields(q)
+	// Sub-tokenize the query the same way command paths are split, so a
+	// pasted hyphenated capability (repos-list-for-authenticated) matches.
+	qTokens := whichSubTokens(q)
 
 	scored := make([]whichMatch, 0, len(index))
 	for i, e := range index {
@@ -75,7 +87,14 @@ func rankWhich(index []whichEntry, query string, limit int) []whichMatch {
 	}
 
 	sort.SliceStable(scored, func(i, j int) bool {
-		return scored[i].Score > scored[j].Score
+		if scored[i].Score != scored[j].Score {
+			return scored[i].Score > scored[j].Score
+		}
+		// Specificity tie-break: at equal score prefer the command with the
+		// fewest capability sub-tokens - the canonical operation over variants
+		// carrying extra words the request never used.
+		return len(whichSubTokens(strings.ToLower(scored[i].Entry.Command))) <
+			len(whichSubTokens(strings.ToLower(scored[j].Entry.Command)))
 	})
 	// Drop zero-score matches when the query was non-empty; agents
 	// branching on exit code rely on "no match" meaning no confidence.
@@ -94,37 +113,278 @@ func rankWhich(index []whichEntry, query string, limit int) []whichMatch {
 func whichScoreEntry(e whichEntry, query string, qTokens []string) int {
 	score := 0
 	cmd := strings.ToLower(e.Command)
-	cmdTokens := strings.Fields(cmd)
+	// Sub-token split (spaces, hyphens, underscores, slashes): a capability
+	// word buried in a hyphenated leaf (repos-list-for-authenticated) must be
+	// matchable by the words a human asks with, or every command in a group
+	// ties on the group token alone and index order decides the answer.
+	cmdTokens := whichSubTokens(cmd)
+	commandParts := strings.Fields(cmd)
+	leaf := ""
+	if len(commandParts) > 0 {
+		leaf = commandParts[len(commandParts)-1]
+	}
 	desc := strings.ToLower(e.Description)
+	descTokens := whichSubTokens(desc)
+	why := strings.ToLower(e.WhyItMatters)
+	whyTokens := whichSubTokens(why)
 	group := strings.ToLower(e.Group)
 
-	// Exact token match on the command path (any token).
+	// Exact token match on the command path (any token). Filler words
+	// credit a command only when they are the whole unsplit leaf
+	// ("run a" → "a"), not a hyphenated sub-token ("in" vs "check-in").
 	for _, qt := range qTokens {
+		if whichIncidentalToken(qt) && !whichTokenMatch(qt, leaf) {
+			continue
+		}
 		for _, ct := range cmdTokens {
-			if qt == ct {
+			if whichTokenMatch(qt, ct) {
 				score += 3
 				break
 			}
 		}
 	}
 	// Substring match on the full command (covers hyphenated leaves).
+	// An incidental-only query must still name the whole command or leaf
+	// so "in" does not admit "check-in" via the trailing fragment.
 	if strings.Contains(cmd, query) {
+		if !whichAllIncidental(qTokens) || whichTokenMatch(query, leaf) || whichTokenMatch(query, cmd) {
+			score += 2
+		}
+	}
+	// Description and rationale are correlated prose fields. Share the existing
+	// per-token cap so repeating the same query in both fields cannot outweigh
+	// an exact command match. A rationale-only match needs two tokens or an
+	// exact multi-token phrase to avoid promoting incidental prose words.
+	descPhrase := strings.Contains(desc, query)
+	descCredit := whichFieldCredit(qTokens, descTokens)
+	whyCredit := whichFieldCredit(qTokens, whyTokens)
+	whyPhrase := len(qTokens) > 1 && strings.Contains(why, query)
+	if score == 0 && whyCredit < 2 && !whyPhrase {
+		whyCredit = 0
+	}
+	if descPhrase || whyPhrase {
 		score += 2
 	}
-	// Substring match on the description.
-	if strings.Contains(desc, query) {
-		score += 2
+	if whyCredit > descCredit {
+		score += whyCredit
+	} else {
+		score += descCredit
 	}
-	// Group tag match.
-	if group != "" {
-		for _, qt := range qTokens {
-			if strings.Contains(group, qt) {
+	// Group tag match requires a whole token, not an arbitrary substring.
+	// Filler words credit a group only when they are the whole group name.
+	groupTokens := whichSubTokens(group)
+	groupMatched := false
+	for _, qt := range qTokens {
+		if whichIncidentalToken(qt) && !whichTokenMatch(qt, group) {
+			continue
+		}
+		for _, gt := range groupTokens {
+			if whichTokenMatch(qt, gt) {
 				score += 1
+				groupMatched = true
+				break
+			}
+		}
+		if groupMatched {
+			break
+		}
+	}
+	// Possessive aliasing: "my/mine/me/current" in a request is API-speak for
+	// the authenticated caller; commands scoped to the authenticated user must
+	// outrank generic listings for possessive asks.
+	possessive := false
+	for _, qt := range qTokens {
+		switch qt {
+		case "my", "mine", "me", "current":
+			possessive = true
+		}
+	}
+	if possessive {
+		for _, ct := range cmdTokens {
+			if ct == "authenticated" || ct == "me" {
+				score += 3
 				break
 			}
 		}
 	}
+	// Read-intent default: penalize write-verb commands when the request never
+	// asked for a write, so neutral asks can never rank a destructive command
+	// first on a tie.
+	if score > 0 {
+		queryWrite := false
+		for _, qt := range qTokens {
+			if whichWriteVerbs[qt] {
+				queryWrite = true
+				break
+			}
+		}
+		if !queryWrite {
+			for _, ct := range cmdTokens {
+				if whichWriteVerbs[ct] {
+					score -= 2
+					break
+				}
+			}
+		}
+	}
+	// Specificity: a command leaf carrying capability sub-tokens the request never
+	// used is a variant, not the canonical answer ("activity-list-repos-
+	// starred-by-authenticated" for a repositories ask). Parent resource tokens
+	// are excluded so a valid nested command is not erased by its path. A
+	// single-token leaf has no variant to disambiguate; the penalty may still
+	// down-rank it but must not zero a description/path hit by itself.
+	if score > 0 && len(qTokens) > 1 {
+		leafTokens := whichSubTokens(leaf)
+		unmatched := 0
+		for _, ct := range leafTokens {
+			hit := false
+			for _, qt := range qTokens {
+				if whichTokenMatch(qt, ct) {
+					hit = true
+					break
+				}
+			}
+			if !hit {
+				unmatched++
+			}
+		}
+		if unmatched > 3 {
+			unmatched = 3
+		}
+		if len(leafTokens) < 2 && unmatched >= score {
+			unmatched = score - 1
+		}
+		score -= unmatched
+	}
 	return score
+}
+
+func whichFieldCredit(qTokens, fieldTokens []string) int {
+	credit := 0
+	matched := make(map[string]struct{})
+	for _, qt := range qTokens {
+		if whichIncidentalToken(qt) {
+			continue
+		}
+		for _, ft := range fieldTokens {
+			if whichTokenMatch(qt, ft) {
+				key := whichTokenKey(ft)
+				if _, ok := matched[key]; ok {
+					break
+				}
+				matched[key] = struct{}{}
+				credit++
+				break
+			}
+		}
+		if credit == 3 {
+			break
+		}
+	}
+	return credit
+}
+
+func whichTokenKey(token string) string {
+	token = strings.Trim(strings.ToLower(token), ".,:;!?()[]{}\"'")
+	if alias := whichTokenAliases[token]; alias != "" {
+		return alias
+	}
+	return whichSingular(token)
+}
+
+func whichTokenMatch(a, b string) bool {
+	a = strings.Trim(strings.ToLower(a), ".,:;!?()[]{}\"'")
+	b = strings.Trim(strings.ToLower(b), ".,:;!?()[]{}\"'")
+	if a == "" || b == "" {
+		return false
+	}
+	if a == b {
+		return true
+	}
+	if whichSingular(a) == whichSingular(b) {
+		return true
+	}
+	return whichTokenAliases[a] != "" && whichTokenAliases[a] == whichTokenAliases[b]
+}
+
+func whichSubTokens(cmd string) []string {
+	return strings.FieldsFunc(cmd, func(r rune) bool {
+		return r == ' ' || r == '-' || r == '_' || r == '/'
+	})
+}
+
+func whichIncidentalToken(token string) bool {
+	token = strings.Trim(strings.ToLower(token), ".,:;!?()[]{}\"'")
+	if token == "" {
+		return true
+	}
+	return whichIncidentalTokens[token]
+}
+
+func whichAllIncidental(qTokens []string) bool {
+	if len(qTokens) == 0 {
+		return false
+	}
+	for _, qt := range qTokens {
+		if !whichIncidentalToken(qt) {
+			return false
+		}
+	}
+	return true
+}
+
+// The closed API-verb set for write-shaped commands. A request that never
+// asked for a write must not tie-break into a destructive command.
+var whichWriteVerbs = map[string]bool{
+	"delete": true, "remove": true, "update": true, "create": true, "set": true,
+	"add": true, "replace": true, "rename": true, "transfer": true, "merge": true,
+	"lock": true, "unlock": true, "star": true, "unstar": true, "follow": true,
+	"unfollow": true, "block": true, "unblock": true, "mute": true, "archive": true,
+	"unarchive": true, "cancel": true, "send": true, "upload": true, "subscribe": true,
+	"unsubscribe": true, "dismiss": true, "approve": true, "decline": true,
+	"post": true, "put": true, "write": true, "edit": true, "modify": true,
+	"publish": true, "share": true, "comment": true, "grant": true, "revoke": true,
+}
+
+var whichTokenAliases = map[string]string{
+	"repo": "repository", "repos": "repository", "repository": "repository", "repositories": "repository",
+}
+
+// Filler words that must not create a which match by themselves. Possessive
+// aliases (my/mine/me/current) stay significant so authenticated-scoped
+// commands can still outrank generic listings.
+var whichIncidentalTokens = map[string]bool{
+	"a": true, "an": true, "the": true, "i": true,
+	"is": true, "are": true, "was": true, "were": true, "be": true, "been": true, "being": true,
+	"of": true, "to": true, "in": true, "on": true, "at": true, "for": true, "with": true, "from": true, "by": true, "about": true,
+	"what": true, "which": true, "who": true, "whom": true, "whose": true, "how": true, "when": true, "why": true, "where": true,
+	"will": true, "would": true, "could": true, "should": true, "may": true, "might": true, "can": true, "shall": true,
+	"do": true, "does": true, "did": true, "have": true, "has": true, "had": true,
+	"and": true, "or": true, "but": true, "if": true, "then": true, "than": true,
+	"this": true, "that": true, "these": true, "those": true, "it": true, "its": true,
+	// PATCH(anac-pl-which-comandi-endpoint): descrizioni e query sono in italiano.
+	"il": true, "lo": true, "la": true, "gli": true, "le": true, "un": true, "uno": true, "una": true, "l": true,
+	"di": true, "del": true, "dello": true, "della": true, "dei": true, "degli": true, "delle": true,
+	"da": true, "dal": true, "dallo": true, "dalla": true, "dai": true, "dagli": true, "dalle": true,
+	"al": true, "allo": true, "alla": true, "ai": true, "agli": true, "alle": true,
+	"nel": true, "nello": true, "nella": true, "nei": true, "negli": true, "nelle": true,
+	"sul": true, "sullo": true, "sulla": true, "sui": true, "sugli": true, "sulle": true,
+	"su": true, "per": true, "tra": true, "fra": true, "con": true, "e": true, "ed": true, "o": true,
+	"che": true, "chi": true, "cosa": true, "come": true, "dove": true, "quando": true, "quale": true, "quali": true,
+	"ha": true, "hanno": true, "è": true, "sono": true, "mi": true, "si": true, "non": true,
+}
+
+func whichSingular(s string) string {
+	if len(s) > 3 && strings.HasSuffix(s, "ies") {
+		return strings.TrimSuffix(s, "ies") + "y"
+	}
+	if len(s) > 3 && strings.HasSuffix(s, "es") {
+		return strings.TrimSuffix(s, "es")
+	}
+	if len(s) > 2 && strings.HasSuffix(s, "s") {
+		return strings.TrimSuffix(s, "s")
+	}
+	return s
 }
 
 func newWhichCmd(flags *rootFlags) *cobra.Command {

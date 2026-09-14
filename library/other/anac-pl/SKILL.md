@@ -101,20 +101,33 @@ anac-pl-pp-cli which "<capability in your own words>"
 
 `which` resolves a natural-language capability query to the best matching command from this CLI's curated feature index. Exit code `0` means at least one match; exit code `2` means no confident match — fall back to `--help` or use a narrower query.
 
+Matching is word-based, not semantic: a query scores on words that appear in a command name (`cerca`, `avvisi`, `cpv`, `affidamenti`, `tipologie`, ...) or in its description, ignoring common Italian and English filler words. Use the words of the domain (`bandi`, `cpv`, `cronologia`, `affidamenti`) rather than paraphrases: `which "trova bandi recenti"` resolves to `avvisi search`, `which "chi ha vinto l'appalto"` returns exit 2.
+
+## Search caveats
+
+These come from how the ANAC search service behaves, not from the CLI. Check them before trusting a result set.
+
+- **Terms are OR-ed by default.** `--query` words are matched in OR and ranked by relevance: the top results are usually on topic, lower ones may contain a single term. Quotes and `+` are silently ignored; `AND` is searched as a word and adds noise. For an exact phrase use `cerca --mode esatta` or `avvisi search --fuzzy=false`: words must be adjacent and in order, and a tipologia is required (the service answers HTTP 500 without one, so the CLI refuses first). Example: `cerca -q "data visualization" --mode esatta -t affidamenti-diretti`.
+- **Sorting is ignored with `--query`.** `--sort-field`/`--sort-dir` only work without free text; the portal's own "Ordina per" has no effect either. To get recent notices, filter with `--published-from GG/MM/AAAA`. There is no filter on the deadline (`dataScadenza`).
+- **`--scheda` takes one tipologia**, as a template number or name from `tipologie list` (`4` or `bandi`, `7` or `esiti`). With comma-separated values the full-text search silently uses only the first, and notice codes such as `AD3` or `A1_29` make the service answer HTTP 500: the CLI rejects both.
+- **`cerca --cpv` is a text match**, not a code filter: use `cerca-avanzata --cpv` to select by code.
+- **The declared result count is an estimate** that changes across pages and identical calls.
+- **`titolo` is often `null`** (about 60% of notices, mostly AD3 and A2_* schede). `descrizione` is always set: read the notice subject from `templates[].template.metadata.descrizione`.
+
 ## Recipes
 
 ### Esiti recenti per parola chiave
 
 ```bash
-anac-pl-cli avvisi search --query 'servizi informatici' --scheda P7_1_1 --size 20
+anac-pl-pp-cli cerca -q 'servizi informatici' -t esiti --published-from 01/06/2026 --size 20
 ```
 
-Filtra i risultati di gara per oggetto.
+Filtra gli esiti di gara per oggetto. Con testo libero l'ordine è per rilevanza, quindi a limitarli ai più recenti è il filtro sulla data.
 
 ### Dettaglio JSON di un esito
 
 ```bash
-anac-pl-cli avvisi get c5bfcc8d-ebed-4b6b-ab5f-661d78fa88e2 --json
+anac-pl-pp-cli avvisi get c5bfcc8d-ebed-4b6b-ab5f-661d78fa88e2 --json
 ```
 
 Recupera il JSON completo del detail page.
@@ -122,7 +135,7 @@ Recupera il JSON completo del detail page.
 ### Estrai solo campi chiave
 
 ```bash
-anac-pl-cli avvisi search --query microsoft --agent --select idAvviso,codiceScheda,dataPubblicazione,score
+anac-pl-pp-cli avvisi search --query microsoft --agent --select idAvviso,codiceScheda,dataPubblicazione,score
 ```
 
 Output compatto per agenti su risposte voluminose.

@@ -4,6 +4,8 @@
 package client
 
 import (
+	"github.com/mvanhorn/printing-press-library/library/other/anac-pl/internal/cliutil"
+	"github.com/mvanhorn/printing-press-library/library/other/anac-pl/internal/config"
 	"bytes"
 	"context"
 	"crypto/sha256"
@@ -12,8 +14,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mvanhorn/printing-press-library/library/other/anac-pl/internal/cliutil"
-	"github.com/mvanhorn/printing-press-library/library/other/anac-pl/internal/config"
 	"io"
 	"math"
 	"net/http"
