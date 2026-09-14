@@ -12645,6 +12645,52 @@
       }
     },
     {
+      "name": "immoweb",
+      "category": "other",
+      "api": "Immoweb",
+      "description": "Search Immoweb from the terminal with every site filter, then get the answers the site can't give: price cuts, days on market, commune medians and rental yield.",
+      "search_terms": [
+        "immoweb",
+        "immoweb-pp-cli",
+        "Search Immoweb from the terminal with every site filter, then get the answers the site can't give: price cuts, days on market, commune medians and rental yield.",
+        "Commune market snapshot",
+        "market",
+        "Median asking price, €/m², price-cut share and recent disappearances for one or several communes, broken down by bedrooms, EPC, type or postcode. Student rooms and per-room lets are left out. Pulls missing areas on first use (--no-pull to stay offline).",
+        "Listing deal verdict",
+        "deal",
+        "Tells you whether one listing is cheap or expensive: €/m² percentile against comparable listings, days on market, price-cut history, demand and EPC gap. Pulls missing areas on first use (--no-pull to stay offline).",
+        "Saved-search triage",
+        "triage",
+        "Ranks the current matches of a saved search (or ad-hoc filters) by a transparent score: EUR/m2 percentile within the same postal code, freshness, price cut, private seller and EPC (with --enrich) so you know who to call first.",
+        "Price-cut leaderboard",
+        "drops",
+        "Lists stored listings whose asking price fell (from prices recorded by find/watch/pull and Immoweb's old-price field), with first and latest price, number of cuts, total % cut and days listed.",
+        "Rental yield estimator",
+        "yield",
+        "Estimates gross rental yield for a sale listing or a whole commune from comparable rents, and refuses when there are too few comparables. Pulls missing areas on first use (--no-pull to stay offline)."
+      ],
+      "path": "library/other/immoweb",
+      "printer": "sambassio",
+      "printer_name": "sambassio",
+      "creator": {
+        "handle": "sambassio",
+        "name": "sambassio"
+      },
+      "mcp": {
+        "binary": "immoweb-pp-mcp",
+        "transports": [
+          "stdio",
+          "http"
+        ],
+        "tool_count": 6,
+        "public_tool_count": 6,
+        "auth_type": "none",
+        "env_vars": [],
+        "mcp_ready": "full",
+        "spec_format": "internal"
+      }
+    },
+    {
       "name": "inaturalist",
       "category": "other",
       "api": "iNaturalist",
@@ -25369,6 +25415,12 @@
         "See at a glance whether your Swiggy login is still valid and which domain sessions are active."
       ],
       "path": "library/food-and-dining/swiggy",
+      "release": {
+        "cli_name": "swiggy-pp-cli",
+        "version": "2026.9.1",
+        "released_at": "2026-09-13T09:37:31Z",
+        "source_commit": "c56a8ba17aa8f6ee0ae9c55fbd749634d209e919"
+      },
       "printer": "SomSamantray",
       "printer_name": "Som Samantray",
       "creator": {
