@@ -11,7 +11,7 @@
   "auth_context": {
     "type": "none"
   },
-  "source_fingerprint": "fae8ba8e39d1045faeddef604df39c2d1523c1232b2f348624d6d73618cf6bed",
+  "source_fingerprint": "038c02a9bf97a996709657fec617c95421a828a8b8521aa7ee8747c98008efa7",
   "source_files": {
     "cmd/ars-sicilia-pp-cli/main.go": "c0dfc303980570f5c430e6eb920798649f3825d25b3691778e19507229430b0c",
     "cmd/ars-sicilia-pp-mcp/main.go": "f181e27a68985fa073ecdaec19a264e69a0af84075b1460c097dc0dc4ea4b5db",
@@ -59,7 +59,7 @@
     "internal/cli/deputato.go": "f0bb5b6f996a898a3a61bc3c5321e06265d355ffc845d5c9c43059d6f5c16602",
     "internal/cli/deputato_profilo.go": "9cf8093168090f0af769bbd409a44cb71f4ea2642ba439eca495a5d73dcf9dc3",
     "internal/cli/deputato_profilo_test.go": "4c297809807340c134aa0accca8589f87773a85a77e31b9d808703954b514f16",
-    "internal/cli/doctor.go": "d7acdcf38206c6d4af42fb0ddb93392425061ff1d2a7fcdbd3094014941b93b3",
+    "internal/cli/doctor.go": "d664e47f2a4e5de226a13f3feb7eaa6f1acfeb57bc1a926bd99854ae6d7ba804",
     "internal/cli/dry_run_test.go": "5ea658300abbed8d1d4854a577d55f24e5d73034e620a153a41d33741becebb9",
     "internal/cli/feedback.go": "2470a2a423cae27c10a337e1a28db1a5cb14504d59b15139f5a238cd2052ee22",
     "internal/cli/get_bd_precedenza_test.go": "a853cdf18ab6f6c8fa7361a50747e76574393d2cc7040e4478a97e2982a9c9fa",
@@ -104,7 +104,7 @@
     "internal/cli/risoluzioni.go": "425524ac973675378baf2c0454f15aebe741d8d11582f706e6ffa070bfddb951",
     "internal/cli/risoluzioni_cerca.go": "27c0c037395058eb4df79a9ff224f078e2c483918b85916cdfa509ef4bf5c47a",
     "internal/cli/risoluzioni_get.go": "8467b08e762705ea337e0e722af7aaea31e4fad8ef24526dbf4bf7cadfcf397a",
-    "internal/cli/root.go": "286be1260b750c99f43f35574db286a1ca78d26a144196dea883fa8cf0db37e4",
+    "internal/cli/root.go": "5f78f40423a9c201cdfc818f83b1fde6d4e89d6a003247943aba9931b2f536fd",
     "internal/cli/root_test.go": "c1cd142aaff1f11ffaac95b6166dae4d57863cce84822000de5e7acc015edbf2",
     "internal/cli/search.go": "e7bdc0fb1ff24b9fa49a8cb15eeae5135039d4fc9b94898d792a14e8fb460e98",
     "internal/cli/select_hint_test.go": "53147eb51f96b56ed4a4cef9536581e830d8377c932af57443084e141931e1ae",
@@ -115,7 +115,8 @@
     "internal/cli/sync_coverage_test.go": "bef54780a3a0c8aeb0bb81d6b74d21e3fd94e8282dd5e1263d299249a972d022",
     "internal/cli/sync_hint.go": "3dbf3f059c83b593709ee803ec006ea05c4c375a41caf9dc09f07a7157aece0a",
     "internal/cli/sync_hint_test.go": "0d9bfd7754caf7dabf4d354d9446416342ad1d7550cab1fe3c0f798fbf3e28a6",
-    "internal/cli/sync_stale.go": "27211c682e189bacb9f2daf528df6d17451625e126cc01c4c95849fa9e120622",
+    "internal/cli/sync_stale.go": "58400d1a20fd1241fadf263e81e138e2052ada550d37089ddf18ec514464dc2c",
+    "internal/cli/sync_stale_db_test.go": "da667740408a45b76fd4204559b0b56e1df94352451ce7679383dd19055186ba",
     "internal/cli/sync_stale_test.go": "a6900800ca823c224ec05850999e9d4e8c23efa4cc1d373c8bb5e1dedca884f2",
     "internal/cli/which.go": "c36493a861ad6e353fb811511050b2c109050a3b31775832b358465f098a9f2d",
     "internal/cli/which_assenti.go": "99ae6eaf01782162abfaa108c482c07b81d2e9d1b7af7f76c3bcdfdf5889da32",

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"strings"
 	"time"
@@ -154,6 +155,14 @@ func newDoctorCmd(flags *rootFlags) *cobra.Command {
 				report["config"] = fmt.Sprintf("error: %s", err)
 			} else {
 				report["config"] = "ok"
+				// config.Load skips an unreadable file silently: tell the two cases apart here.
+				if f, openErr := os.Open(cfg.Path); errors.Is(openErr, fs.ErrNotExist) {
+					report["config"] = "ok (no config file: built-in defaults plus environment overrides)"
+				} else if openErr != nil {
+					report["config"] = fmt.Sprintf("error: config file not readable: %s", openErr)
+				} else {
+					f.Close()
+				}
 				report["config_path"] = cfg.Path
 				report["base_url"] = cfg.BaseURL
 			}

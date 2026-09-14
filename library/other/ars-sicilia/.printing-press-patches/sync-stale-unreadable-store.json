@@ -1,0 +1,15 @@
+{
+  "schema_version": 2,
+  "id": "sync-stale-unreadable-store",
+  "applied_at": "2026-09-13",
+  "base_run_id": "20260528-181840",
+  "base_printing_press_version": "4.30.3",
+  "summary": "`sync stale` no longer reports a store it cannot read as \"never synced\": a missing or empty file names the path it looked at, any other stat, open or query failure is an error; `doctor` says when no config file exists and fails when the file exists but cannot be opened.",
+  "reason": "`store.OpenReadOnly` never fails (`sql.Open` is lazy), so the no-database branch was dead, and `row.Scan` errors were discarded. A missing path, a 0-byte file or a non-SQLite file all printed 12 archives with records 0 and \"Mai sincronizzato\", exit 0. A news-driven check read that as a default-path bug and planned a re-sync. `doctor` printed `config: ok` next to a `config_path` that does not exist.",
+  "files": [
+    "internal/cli/sync_stale.go",
+    "internal/cli/sync_stale_db_test.go",
+    "internal/cli/doctor.go"
+  ],
+  "validated_outcome": "Unit tests on missing path, 0-byte file, non-SQLite file and a healthy store; the first two fail on the previous code. Live with the installed binary: default store still reads 761 records; `--db store.db` (0 byte) and `--db /nonexistent/x.db` give the hint with the path; a text file gives `file is not a database (26)`, exit 1; `doctor --json` gives `ok (no config file, defaults in use)`. Review follow-up (PR #1997): a stat error other than not-exist (directory mode 000) is an error naming the path, unit test added; `doctor` opens the config file instead of stat-ing it, so a mode-000 file reports `error: config file not readable: ... permission denied`, a readable one `ok`, a missing one `ok (no config file: built-in defaults plus environment overrides)`."
+}

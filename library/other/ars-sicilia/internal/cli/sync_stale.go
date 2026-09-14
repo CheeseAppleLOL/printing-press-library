@@ -6,7 +6,10 @@ package cli
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"sort"
 	"time"
 
@@ -59,8 +62,13 @@ func runSyncStale(cmd *cobra.Command, flags *rootFlags, dbPath, maxAge string) e
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	db, err := store.OpenReadOnly(dbPath)
-	if err != nil {
+	// sql.Open is lazy and never fails on a missing file: check it here, or a
+	// missing store would read as "never synced" instead of "no store".
+	fi, statErr := os.Stat(dbPath)
+	if statErr != nil && !errors.Is(statErr, fs.ErrNotExist) {
+		return fmt.Errorf("sync stale: accesso a %s: %w", dbPath, statErr)
+	}
+	if statErr != nil || fi.Size() == 0 {
 		// Print a graceful empty report — first-use case before any sync.
 		report := []staleEntry{}
 		for _, arc := range icaro.All {
@@ -68,10 +76,14 @@ func runSyncStale(cmd *cobra.Command, flags *rootFlags, dbPath, maxAge string) e
 				Archivio:  arc.Slug,
 				ArchiveID: arc.ID,
 				Stale:     true,
-				Hint:      "Nessun database locale trovato. Esegui `ars-sicilia-pp-cli sync` per crearlo.",
+				Hint:      fmt.Sprintf("Nessun database locale in %s. Esegui `ars-sicilia-pp-cli sync` per crearlo, o indica il file con --db.", dbPath),
 			})
 		}
 		return emitJSONOrTable(cmd, flags, report)
+	}
+	db, err := store.OpenReadOnly(dbPath)
+	if err != nil {
+		return fmt.Errorf("sync stale: apertura di %s: %w", dbPath, err)
 	}
 	defer db.Close()
 
@@ -84,14 +96,18 @@ func runSyncStale(cmd *cobra.Command, flags *rootFlags, dbPath, maxAge string) e
 		var n int64
 		row := db.DB().QueryRowContext(ctx,
 			`SELECT COUNT(*) FROM resources WHERE resource_type = ?`, arc.Slug)
-		_ = row.Scan(&n)
+		if err := row.Scan(&n); err != nil {
+			return fmt.Errorf("sync stale: lettura di %s: %w", dbPath, err)
+		}
 		e.Records = n
 
 		// Last sync timestamp (sync_state table emitted by the framework).
 		var last sql.NullString
 		row = db.DB().QueryRowContext(ctx,
 			`SELECT last_synced_at FROM sync_state WHERE resource_type = ?`, arc.Slug)
-		_ = row.Scan(&last)
+		if err := row.Scan(&last); err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("sync stale: lettura di %s: %w", dbPath, err)
+		}
 		if last.Valid && last.String != "" {
 			e.LastSync = last.String
 			if t, err := time.Parse(time.RFC3339, last.String); err == nil {
