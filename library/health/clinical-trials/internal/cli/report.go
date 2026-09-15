@@ -70,26 +70,7 @@ func newNovelReportCmd(flags *rootFlags) *cobra.Command {
 				return classifyAPIError(err, flags)
 			}
 
-			phase := tallyPhases(trials)
-			geo := newCounter()
-			sponsor := newCounter()
-			for _, t := range trials {
-				for _, country := range t.Countries {
-					geo.add(country)
-				}
-				sponsor.add(t.Sponsor)
-			}
-
-			rep := topicReport{
-				Topic:         term,
-				Total:         total,
-				Recruiting:    recruiting,
-				RecruitingPct: percentOf(recruiting, total),
-				SampleSize:    len(trials),
-				Phases:        phase.top(8),
-				Countries:     geo.top(topN),
-				Sponsors:      sponsor.top(topN),
-			}
+			rep := buildTopicReport(term, total, recruiting, trials, topN)
 			if format == "csv" {
 				if err := renderReportCSV(cmd, rep); err != nil {
 					return err
@@ -119,6 +100,44 @@ type topicReport struct {
 	Phases        []rankedEntry
 	Countries     []rankedEntry
 	Sponsors      []rankedEntry
+}
+
+// buildTopicReport turns a fetched sample into the briefing the renderers
+// print. It sits beside topicReport rather than inside RunE because everything
+// above it in the command talks to the network and everything from here down is
+// arithmetic on trials the caller already holds — the same split
+// buildTrialListView makes in recruiting.go, which is why recruiting's tally
+// was the only one a test could reach before this.
+//
+// total and recruiting describe the whole literature and are passed in rather
+// than derived. They come from two ctgovCount calls, not from the sample, and
+// len(trials) is a different number on purpose.
+//
+// The two counters differ in shape and the difference is the thing worth
+// testing. Countries ranges over a slice, so a trial sited in three countries
+// contributes three entries, the same way a two-phase trial lands in two phase
+// buckets. Sponsor reads one scalar field and can only ever contribute one.
+func buildTopicReport(term string, total, recruiting int, trials []Trial, topN int) topicReport {
+	phase := tallyPhases(trials)
+	geo := newCounter()
+	sponsor := newCounter()
+	for _, t := range trials {
+		for _, country := range t.Countries {
+			geo.add(country)
+		}
+		sponsor.add(t.Sponsor)
+	}
+
+	return topicReport{
+		Topic:         term,
+		Total:         total,
+		Recruiting:    recruiting,
+		RecruitingPct: percentOf(recruiting, total),
+		SampleSize:    len(trials),
+		Phases:        phase.top(8),
+		Countries:     geo.top(topN),
+		Sponsors:      sponsor.top(topN),
+	}
 }
 
 func renderReportMarkdown(cmd *cobra.Command, r topicReport) error {
