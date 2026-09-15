@@ -2,17 +2,17 @@
   "schema_version": 1,
   "slug": "clinical-trials",
   "cli_name": "clinical-trials-pp-cli",
-  "version": "2026.9.7",
-  "released_at": "2026-09-13T09:12:20Z",
-  "source_commit": "feed82f71e80ec555a7bc621a96a448e9561bb86",
+  "version": "2026.9.8",
+  "released_at": "2026-09-15T09:23:36Z",
+  "source_commit": "cd0a61ddcc84b553cca292a4e8c2e5a2fdbf608c",
   "printing_press_version": "4.25.0",
   "run_id": "20260623-164233-df565e8d",
   "changes": [
     {
-      "title": "clinical-trials: extract the phase tally into one testable helper",
-      "pr": 1990,
-      "url": "https://github.com/mvanhorn/printing-press-library/pull/1990",
-      "commit": "feed82f71e80ec555a7bc621a96a448e9561bb86"
+      "title": "clinical-trials: make report a testable view",
+      "pr": 1999,
+      "url": "https://github.com/mvanhorn/printing-press-library/pull/1999",
+      "commit": "cd0a61ddcc84b553cca292a4e8c2e5a2fdbf608c"
     }
   ]
 }
