@@ -2,17 +2,17 @@
   "schema_version": 1,
   "slug": "anac-pl",
   "cli_name": "anac-pl-pp-cli",
-  "version": "2026.9.3",
-  "released_at": "2026-09-14T10:40:46Z",
-  "source_commit": "f0508ddb41d084dc47d9e6d3c527257d961e7330",
+  "version": "2026.9.4",
+  "released_at": "2026-09-16T09:13:54Z",
+  "source_commit": "f71f3bb65521febbe6a8845989d12a4dcecb7963",
   "printing_press_version": "4.17.0",
   "run_id": "20260623-093040-ed91772a",
   "changes": [
     {
-      "title": "fix(anac-pl): exact-phrase search, honest sorting with --query, which finds the search commands, MCP validation",
-      "pr": 1996,
-      "url": "https://github.com/mvanhorn/printing-press-library/pull/1996",
-      "commit": "f0508ddb41d084dc47d9e6d3c527257d961e7330"
+      "title": "fix(anac-pl): accept the CPV check digit in the advanced search",
+      "pr": 2005,
+      "url": "https://github.com/mvanhorn/printing-press-library/pull/2005",
+      "commit": "f71f3bb65521febbe6a8845989d12a4dcecb7963"
     }
   ]
 }

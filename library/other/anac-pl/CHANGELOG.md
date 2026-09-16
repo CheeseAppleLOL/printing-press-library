@@ -2,6 +2,10 @@
 
 This file is maintained by printing-press-library release automation. Do not hand-edit release sections in normal PRs.
 
+## 2026.9.4 - 2026-09-16
+
+- fix(anac-pl): accept the CPV check digit in the advanced search (#2005).
+
 ## 2026.9.3 - 2026-09-14
 
 - fix(anac-pl): exact-phrase search, honest sorting with --query, which finds the search commands, MCP validation (#1996).
