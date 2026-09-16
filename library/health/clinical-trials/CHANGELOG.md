@@ -2,6 +2,14 @@
 
 This file is maintained by printing-press-library release automation. Do not hand-edit release sections in normal PRs.
 
+## 2026.9.10 - 2026-09-16
+
+- clinical-trials: extract compare's trial summary into a callable helper (#2001).
+
+## 2026.9.9 - 2026-09-16
+
+- clinical-trials: extract emerging's sample analysis into a callable helper (#2002).
+
 ## 2026.9.8 - 2026-09-15
 
 - clinical-trials: make report a testable view (#1999).

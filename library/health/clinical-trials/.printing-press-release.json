@@ -2,17 +2,17 @@
   "schema_version": 1,
   "slug": "clinical-trials",
   "cli_name": "clinical-trials-pp-cli",
-  "version": "2026.9.8",
-  "released_at": "2026-09-15T09:23:36Z",
-  "source_commit": "cd0a61ddcc84b553cca292a4e8c2e5a2fdbf608c",
+  "version": "2026.9.10",
+  "released_at": "2026-09-16T09:11:56Z",
+  "source_commit": "3660be2583c5ea671b8549c70abac6dc01a476f2",
   "printing_press_version": "4.25.0",
   "run_id": "20260623-164233-df565e8d",
   "changes": [
     {
-      "title": "clinical-trials: make report a testable view",
-      "pr": 1999,
-      "url": "https://github.com/mvanhorn/printing-press-library/pull/1999",
-      "commit": "cd0a61ddcc84b553cca292a4e8c2e5a2fdbf608c"
+      "title": "clinical-trials: extract compare's trial summary into a callable helper",
+      "pr": 2001,
+      "url": "https://github.com/mvanhorn/printing-press-library/pull/2001",
+      "commit": "3660be2583c5ea671b8549c70abac6dc01a476f2"
     }
   ]
 }

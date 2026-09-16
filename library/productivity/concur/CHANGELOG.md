@@ -2,6 +2,10 @@
 
 This file is maintained by printing-press-library release automation. Do not hand-edit release sections in normal PRs.
 
+## 2026.9.4 - 2026-09-16
+
+- fix+feat(concur): correct expenses-create body shape and add browser-automation fallback for its live 404 defect (#2003).
+
 ## 2026.9.3 - 2026-09-11
 
 - fix: fail closed on ambiguous fleet write retries (#1978).
