@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "id": "anac-pl-cpv-codice-descrizione",
+  "applied_at": "2026-09-16",
+  "base_run_id": "20260623-093040-ed91772a",
+  "base_printing_press_version": "4.17.0",
+  "summary": "NormalizeCPV riconosce il valore `codice_descrizione` (72412000_Fornitori di servizi di posta elettronica) con cui il dettaglio dell'avviso espone ora il CPV; il filtro lato client di `affidamenti` (--cpv-exact e quello automatico di --cpv-code) confronta ogni codice della lista senza cifra di controllo; `soloCodiciCompleti` tratta 30213000-5 come codice completo. Dall audit sui casi analoghi: `--cpv-exact` passa dal validatore (302-5 non si riduce piu al prefisso 302), gli errori nominano il flag giusto, `cpv search` tratta 30213000-5 come codice, la forma oggetto di NormalizeCPV toglie la cifra di controllo, la colonna cpv di `cerca-avanzata` mostra il codice normalizzato, `cpv get` di un codice inesistente esce 3 (non trovato) invece di 4. `cpv search` e `cpv get` riconoscono la cifra di controllo solo nella forma esatta 8 cifre-trattino-1 cifra (CodiceConControllo): 30213000-55, 302-5 o 30213000-abc non vengono troncati in una ricerca piu ampia.",
+  "reason": "Col nuovo formato la colonna `cpv` di `affidamenti` usciva sempre vuota e il codice finiva in `cpv_desc`. Il filtro confrontava il valore intero del flag, quindi 30213000-5 o una lista di codici non corrispondevano mai ai CPV normalizzati delle righe: il difetto restava nascosto solo perche' i CPV erano vuoti. Rilievi Greptile su mvanhorn/printing-press-library#2005.",
+  "files": [
+    "internal/cli/affidamenti.go",
+    "internal/cli/cerca_avanzata.go",
+    "internal/cli/cerca_avanzata_test.go",
+    "internal/cli/cpv.go",
+    "internal/cpvdata/cpvdata.go",
+    "internal/cpvdata/cpvdata_test.go"
+  ],
+  "validated_outcome": "Il 16/09/2026, `affidamenti --cpv-code 72412000 -t \"\" --pages 2`: 38 righe tutte con cpv vuoto prima, tutte 72412000 dopo; con 72412000-9 le stesse 38; con 72412000,30213000 29 righe (28 + 1). `--cpv-exact 72412000` sulla vecchia ricerca: da 31 righe a 1. `affidamenti --cpv-exact 302-5` exit 2; `cpv search 30213000-5` trova 30213000; `cpv get 99999999` exit 3; colonna cpv di `cerca-avanzata --cpv 72412000,30213000` con codici. `cpv search 30213000-55` e `302-55`: 0 risultati invece di 1 e 50; `cpv get 30213000-abc` exit 3."
+}

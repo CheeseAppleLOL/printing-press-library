@@ -4,11 +4,12 @@
   "applied_at": "2026-08-03",
   "base_run_id": "20260623-093040-ed91772a",
   "base_printing_press_version": "4.17.0",
-  "summary": "Nuovo comando `cerca-avanzata` sull'endpoint /avvisi-full-text-specializzata, dove il filtro CPV seleziona davvero per codice: codice pieno o prefisso 3-8 cifre, piu' valori in OR, filtro per stazione appaltante, paginazione a token, date con default 01/01/2024-oggi.",
+  "summary": "Nuovo comando `cerca-avanzata` sull'endpoint /avvisi-full-text-specializzata, dove il filtro CPV seleziona davvero per codice: codice pieno o prefisso 3-8 cifre, piu' valori in OR, filtro per stazione appaltante, paginazione a token, date con default 01/01/2024-oggi. Da settembre 2026 il filtro accetta anche la cifra di controllo (30213000-5), che il servizio ignora; sui prefissi il trattino viene respinto dalla CLI perche il servizio non restituirebbe nulla. Dal 15/09/2026 il servizio risponde HTTP 400 ai valori con meno di 3 cifre: il validatore ora li respinge per --cpv e --cpv-code (non per --cpv-exact, che filtra in locale).",
   "reason": "Il campo `cpv` della ricerca ordinaria non e' un filtro sul codice ma un match testuale: per 72412000 il servizio dichiara 289 risultati mentre gli avvisi con quel CPV sono 36. ANAC ha rilasciato in beta a luglio 2026 un endpoint specializzato che filtra davvero; senza questo comando la CLI non puo' rispondere a «tutti gli avvisi con questo CPV».",
   "files": [
     "internal/cli/cerca_avanzata.go",
-    "internal/cli/root.go"
+    "internal/cli/root.go",
+    "internal/cli/cerca_avanzata_test.go"
   ],
-  "validated_outcome": "117/117 avvisi campionati riportano il CPV cercato (30213000, 42120000, 72412000); i prefissi non iniziali (213, 13000) danno zero; l'insieme trovato coincide avviso per avviso con i 36 veri della ricerca vecchia."
+  "validated_outcome": "117/117 avvisi campionati riportano il CPV cercato (30213000, 42120000, 72412000); i prefissi non iniziali (213, 13000) danno zero; l'insieme trovato coincide avviso per avviso con i 36 veri della ricerca vecchia. Il 16/09/2026: 30213000, 30213000-5 e 30213000-9 restituiscono gli stessi 31 avvisi (01/06-12/09/2026), 302-5 nessuno. Il 16/09/2026 via API: 72 e 72,302 -> 400; 722, 30213000-5, 302,4512 -> 200."
 }

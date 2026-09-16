@@ -106,8 +106,17 @@ affidamenti aggregati via Consip; incrociare con altre fonti (es. MxMap).
 			// --cpv-code usa la ricerca avanzata, che accetta solo date, CPV e
 			// stazione appaltante: gli altri filtri non hanno un equivalente.
 			wantTipologia := ""
+			// --cpv-exact filtra le righe per prefisso di codice: un valore
+			// malformato come 302-5, ridotto a 302, allargherebbe il filtro
+			// invece di restringerlo, quindi lo si respinge come --cpv-code.
+			if cpvExact != "" {
+				if err := validateCPVFilter("--cpv-exact", cpvExact, 2); err != nil {
+					_ = cmd.Usage()
+					return usageErr(err)
+				}
+			}
 			if cpvCode != "" {
-				if err := validateCPVFilter(cpvCode); err != nil {
+				if err := validateCPVFilter("--cpv-code", cpvCode, 3); err != nil {
 					_ = cmd.Usage()
 					return usageErr(err)
 				}
@@ -322,10 +331,20 @@ affidamenti aggregati via Consip; incrociare con altre fonti (es. MxMap).
 			// che l'API ha correttamente restituito. Se invece --cpv-exact è
 			// esplicito, l'utente vuole un filtro stretto.
 			if cpvExact != "" {
-				want := strings.TrimSpace(cpvExact)
+				// Ogni codice della lista, senza cifra di controllo: con
+				// --cpv-code 30213000-5 o 30213000,42120000 il confronto sul
+				// valore intero non trovava mai i CPV normalizzati delle righe.
+				want := codiciCPV(cpvExact)
 				kept := rows[:0]
 				for _, r := range rows {
-					if r.CPV == want || strings.HasPrefix(r.CPV, want) || (cpvExactAuto && r.CPV == "") {
+					keep := cpvExactAuto && r.CPV == ""
+					for _, w := range want {
+						if strings.HasPrefix(r.CPV, w) {
+							keep = true
+							break
+						}
+					}
+					if keep {
 						kept = append(kept, r)
 					}
 				}
@@ -354,7 +373,7 @@ affidamenti aggregati via Consip; incrociare con altre fonti (es. MxMap).
 	f.StringVarP(&query, "query", "q", "", "Testo libero (keyword, CIG, CUP, oggetto)")
 	f.StringVarP(&tipologia, "tipologia", "t", "esiti", "Tipologia (nome/slug o template); default 'esiti'")
 	f.StringVar(&cpv, "cpv", "", "Valore grezzo per il campo CPV della vecchia ricerca (match testuale, non selettivo; di norma usa --cpv-code)")
-	f.StringVar(&cpvCode, "cpv-code", "", "Codice CPV o suo prefisso (min 3 cifre): usa la ricerca avanzata ANAC, che filtra davvero per codice. Non combinabile con --query/--amount-*")
+	f.StringVar(&cpvCode, "cpv-code", "", "Codice CPV o suo prefisso (min 3 cifre), anche con la cifra di controllo (30213000-5): usa la ricerca avanzata ANAC, che filtra davvero per codice. Non combinabile con --query/--amount-*")
 	f.StringVar(&cpvExact, "cpv-exact", "", "Filtro CPV ESATTO lato client sul codice reale (es. 72212220; accetta prefisso, es. 72)")
 	f.StringVar(&amountMin, "amount-min", "", "Importo minimo (euro)")
 	f.StringVar(&amountMax, "amount-max", "", "Importo massimo (euro)")

@@ -53,6 +53,9 @@ func NormalizeCPV(v any) (string, string, bool) {
 	case map[string]any:
 		code, _ := x["codice"].(string)
 		desc, _ := x["descrizione"].(string)
+		if i := strings.IndexByte(code, '-'); i >= 0 {
+			code = code[:i] // cifra di controllo, come nel caso stringa
+		}
 		if code == "" && desc != "" {
 			if c, ok := byDesc[normDesc(desc)]; ok {
 				code = c
@@ -69,6 +72,22 @@ func NormalizeCPV(v any) (string, string, bool) {
 		s := strings.TrimSpace(x)
 		if s == "" {
 			return "", "", false
+		}
+		// "72412000_Fornitori di servizi di posta elettronica": dal settembre
+		// 2026 il dettaglio dell'avviso espone codice e descrizione in un solo
+		// valore, separati dal primo trattino basso.
+		if i := strings.IndexByte(s, '_'); i > 0 {
+			code := s[:i]
+			if j := strings.IndexByte(code, '-'); j >= 0 {
+				code = code[:j]
+			}
+			if allDigits(code) {
+				desc := strings.TrimSpace(s[i+1:])
+				if e, ok := byCode[code]; ok && desc == "" {
+					desc = e.Description
+				}
+				return code, desc, true
+			}
 		}
 		// stringa numerica = codice (eventuale "-N" check digit rimosso)
 		base := s
@@ -117,11 +136,28 @@ func Count() int { return len(entries) }
 // without the "-N" check digit; only the 8-digit base is matched.
 func Get(code string) (Entry, bool) {
 	code = strings.TrimSpace(code)
-	if i := strings.IndexByte(code, '-'); i >= 0 {
-		code = code[:i]
+	if strings.Contains(code, "-") {
+		c, ok := CodiceConControllo(code)
+		if !ok {
+			return Entry{}, false
+		}
+		code = c
 	}
 	e, ok := byCode[code]
 	return e, ok
+}
+
+// CodiceConControllo riconosce la forma ufficiale del codice con la cifra di
+// controllo, esattamente 8 cifre, trattino e una cifra (30213000-5), e
+// restituisce il codice a 8 cifre. Varianti come 30213000-55 o 302-5 non sono
+// codici: accettarle troncando il suffisso trasformerebbe un errore in una
+// ricerca più ampia di quella chiesta.
+func CodiceConControllo(s string) (string, bool) {
+	s = strings.TrimSpace(s)
+	if len(s) != 10 || s[8] != '-' || !allDigits(s[:8]) || !allDigits(s[9:]) {
+		return "", false
+	}
+	return s[:8], true
 }
 
 // Search returns entries matching the query. A purely numeric query matches by
@@ -132,6 +168,11 @@ func Search(query string, limit int) []Entry {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil
+	}
+	// Un codice con la cifra di controllo (30213000-5) è ancora una ricerca
+	// per codice: senza questo passaggio finiva fra le parole e non trovava nulla.
+	if c, ok := CodiceConControllo(query); ok {
+		query = c
 	}
 	tokens := strings.Fields(strings.ToLower(query))
 	numericPrefix := allDigits(query)

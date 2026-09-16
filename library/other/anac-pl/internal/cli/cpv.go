@@ -93,7 +93,7 @@ func newCpvGetCmd(flags *rootFlags) *cobra.Command {
 			}
 			e, ok := cpvdata.Get(args[0])
 			if !ok {
-				return &cliError{code: 4, err: fmt.Errorf("codice CPV %q non trovato", args[0])}
+				return notFoundErr(fmt.Errorf("codice CPV %q non trovato", args[0]))
 			}
 			if flags.asJSON || flags.agent || (!isTerminal(cmd.OutOrStdout()) && !flags.csv && !flags.quiet && !flags.plain) {
 				return printJSONFiltered(cmd.OutOrStdout(), e, flags)

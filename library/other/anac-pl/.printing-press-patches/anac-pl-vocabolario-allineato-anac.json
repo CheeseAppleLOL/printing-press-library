@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "id": "anac-pl-vocabolario-allineato-anac",
+  "applied_at": "2026-09-16",
+  "base_run_id": "20260623-093040-ed91772a",
+  "base_printing_press_version": "4.17.0",
+  "summary": "Vocabolario CPV incluso allineato all'elenco pubblicato da ANAC (anticorruzione/npa, tipologiche/CPV.json): 03116200 torna 'Lattice naturale' e si aggiunge 03117140; aiuto di `cerca-avanzata --categorie` con i 55 valori esposti e la data 09/07/2026.",
+  "reason": "La voce 03116200 portava la descrizione di 03117140, che mancava: `cpv get` e la normalizzazione restituivano una descrizione sbagliata. L'aiuto delle categorie citava 56 valori e 'luglio 2026', mentre il servizio ne espone 55 e il portale dichiara la copertura dal 09/07/2026.",
+  "files": [
+    "internal/cpvdata/cpv_it.tsv",
+    "internal/cpvdata/cpvdata_test.go",
+    "internal/cli/cerca_avanzata.go",
+    "README.md"
+  ],
+  "validated_outcome": "Confronto voce per voce con CPV.json di ANAC: 9454 codici e descrizioni identici dopo la correzione (prima 1 codice mancante e 1 descrizione diversa). Descrizioni confermate sul CPV 2008 (03116200 Natural latex, 03117140 Plants used for fungicidal or similar purposes). /api/v0/lavori?request=visible: 55 voci, nessun duplicato."
+}

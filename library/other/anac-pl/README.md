@@ -10,7 +10,7 @@ Printed by [@aborruso](https://github.com/aborruso) (aborruso).
 
 ### Dal catalogo Printing Press
 
-Una volta che questa CLI è nel catalogo, l'installer fa tutto in un comando, binario più skill per gli agent:
+anac-pl è nel [catalogo Printing Press](https://github.com/mvanhorn/printing-press-library). L'installer fa tutto in un comando, binario più skill per gli agent:
 
 ```bash
 npx -y @mvanhorn/printing-press-library install anac-pl
@@ -20,6 +20,12 @@ Solo il binario, senza skill:
 
 ```bash
 npx -y @mvanhorn/printing-press-library install anac-pl --cli-only
+```
+
+Per aggiornarla all'ultima release del catalogo:
+
+```bash
+npx -y @mvanhorn/printing-press-library update anac-pl
 ```
 
 Senza Node, con Go 1.26.6 o superiore:
@@ -91,6 +97,9 @@ anac-pl-pp-cli cpv search "posta elettronica"
 # Filtro CPV che seleziona davvero per codice (ricerca avanzata del portale)
 anac-pl-pp-cli cerca-avanzata --cpv 30213000
 
+# Il codice come compare negli atti, con la cifra di controllo, va bene lo stesso
+anac-pl-pp-cli cerca-avanzata --cpv 30213000-5
+
 # Tabella committente -> aggiudicatario -> importo -> CIG -> CPV -> giurisdizione
 anac-pl-pp-cli affidamenti --cpv-code 72412000 -t "" --pages 3 --from-search --csv
 
@@ -108,6 +117,13 @@ Per una frase esatta c'è la corrispondenza esatta del portale: `cerca --mode es
 ```bash
 anac-pl-pp-cli cerca -q "data visualization" --mode esatta -t affidamenti-diretti
 ```
+
+## Elenchi di riferimento di ANAC
+
+ANAC pubblica le tipologiche della Piattaforma Contratti Pubblici nel repository [anticorruzione/npa](https://github.com/anticorruzione/npa). Due servono direttamente alla ricerca avanzata:
+
+- [codici CPV](https://github.com/anticorruzione/npa/blob/main/docs/modello-dati/tipologiche/CPV.json): 9.454 codici, con descrizione in italiano e in inglese. È l'elenco a cui rimanda la finestra informativa del campo CPV della ricerca avanzata, e il vocabolario incluso nella CLI (`cpv search`, `cpv get`) coincide con questo.
+- [categorie](https://github.com/anticorruzione/npa/blob/main/docs/modello-dati/tipologiche/categoria.json): le categorie di qualificazione dei lavori (OG, OS), le forniture di beni (FB) e di servizi (FS), e le stazioni appaltanti con sistema di qualificazione proprio (AA). Sono i valori di `cerca-avanzata --categorie`. Nel file compaiono anche `999` (categoria non definita), che la ricerca non propone, e `OS 29` due volte: il servizio ne espone 55, senza duplicati.
 
 ## Doppi invii: righe uguali con `id_avviso` diverso
 

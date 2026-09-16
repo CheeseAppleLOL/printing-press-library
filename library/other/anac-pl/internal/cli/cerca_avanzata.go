@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/mvanhorn/printing-press-library/library/other/anac-pl/internal/cpvdata"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -134,8 +135,8 @@ portale (rilasciato in beta a luglio 2026).
 
 A differenza di 'cerca', qui il CPV è un vero filtro sul codice del lotto:
   --cpv 30213000     codice completo
+  --cpv 30213000-5   codice completo con la cifra di controllo, come negli atti
   --cpv 30213        prefisso: tutta la famiglia
-  --cpv 45           divisione CPV (il portale dichiara min 3 cifre, l'API accetta 2)
   --cpv 302,4512     più valori separati da virgola, in OR fra loro
 
 Le date sono obbligatorie lato API: se non le passi vengono usate 01/01/2024
@@ -161,7 +162,7 @@ Per quelli usa 'cerca' (il cui filtro CPV però non è selettivo).
 				_ = cmd.Usage()
 				return usageErr(fmt.Errorf("serve almeno un filtro: --cpv, --sa o --categorie"))
 			}
-			if err := validateCPVFilter(cpv); err != nil {
+			if err := validateCPVFilter("--cpv", cpv, 3); err != nil {
 				_ = cmd.Usage()
 				return usageErr(err)
 			}
@@ -219,9 +220,9 @@ Per quelli usa 'cerca' (il cui filtro CPV però non è selettivo).
 	}
 
 	f := cmd.Flags()
-	f.StringVar(&cpv, "cpv", "", "Codice CPV o suo prefisso (2-8 cifre); più valori separati da virgola (in OR)")
+	f.StringVar(&cpv, "cpv", "", "Codice CPV o suo prefisso (3-8 cifre), anche con la cifra di controllo (30213000-5); più valori separati da virgola (in OR)")
 	f.StringVar(&sa, "sa", "", "Codice fiscale della stazione appaltante")
-	f.StringVar(&categorie, "categorie", "", "Categoria lavori come la espone ANAC, spazio compreso (es. \"OG 1\", \"FS\"); i 56 valori ammessi sono in /api/v0/lavori?request=visible. Valorizzata solo sugli avvisi da luglio 2026")
+	f.StringVar(&categorie, "categorie", "", "Categoria lavori come la espone ANAC, spazio compreso (es. \"OG 1\", \"FS\"); i 55 valori ammessi sono in /api/v0/lavori?request=visible. Valorizzata solo sugli avvisi dal 09/07/2026")
 	f.StringVar(&from, "from", "", "Data pubblicazione minima GG/MM/AAAA (default 01/01/2024)")
 	f.StringVar(&to, "to", "", "Data pubblicazione massima GG/MM/AAAA (default oggi)")
 	f.BoolVar(&or, "or", false, "Combina i filtri in OR anziché in AND (ha senso con almeno due filtri fra --cpv, --sa, --categorie)")
@@ -230,16 +231,18 @@ Per quelli usa 'cerca' (il cui filtro CPV però non è selettivo).
 	return cmd
 }
 
-// validateCPVFilter scarta gli input che il server rifiuterebbe con un HTTP 500
-// poco leggibile ("Il valore CPV deve contenere solo numeri"). Il form del
-// portale impone un minimo di 3 cifre e disabilita la ricerca sotto quella
-// soglia, ma l'API accetta anche i prefissi di 2 cifre, cioè le divisioni del
-// vocabolario CPV (es. 45 = lavori di costruzione): li lasciamo passare, come
-// già facciamo con la finestra temporale, che il form limita a 12 mesi e l'API
-// no. I risultati restituiti sono pertinenti; è il conteggio a non esserlo, ma
-// per una ragione che non dipende dalla lunghezza del prefisso — vedi
-// warnConteggioSottostimato.
-func validateCPVFilter(cpv string) error {
+// validateCPVFilter scarta gli input che il server rifiuterebbe, con un errore
+// d'uso che nomina il flag. Dal rilascio ANAC del 15/09/2026 il servizio valida
+// da sé e risponde HTTP 400 a ogni valore con meno di 3 cifre (anche dentro una
+// lista, es. "72,302"), a più di 8 cifre senza trattino (302130005) e a una
+// cifra di controllo che non sia una sola cifra (30213000-55). Fino ad agosto
+// accettava i prefissi di 2 cifre, cioè le divisioni CPV: non più.
+// minCifre vale 3 per i flag che arrivano al servizio (--cpv, --cpv-code) e 2
+// per --cpv-exact, che filtra le righe in locale e dove una divisione ha senso.
+// La finestra temporale oltre i 12 mesi, che il form del portale blocca, l'API
+// la accetta ancora. Il conteggio dichiarato resta inaffidabile per ragioni
+// indipendenti dalla lunghezza del prefisso: vedi warnConteggioSottostimato.
+func validateCPVFilter(flag, cpv string, minCifre int) error {
 	if strings.TrimSpace(cpv) == "" {
 		return nil
 	}
@@ -248,13 +251,29 @@ func validateCPVFilter(cpv string) error {
 		if t == "" {
 			continue
 		}
-		for _, r := range t {
-			if r < '0' || r > '9' {
-				return fmt.Errorf("--cpv accetta solo codici numerici (%q non lo è); per cercare una descrizione usa 'cpv search'", t)
+		// Il codice come compare negli atti ufficiali porta la cifra di
+		// controllo dopo un trattino (30213000-5). Da settembre 2026 il
+		// servizio la accetta e la ignora: con la cifra giusta o sbagliata
+		// restituisce gli stessi avvisi. Su un prefisso invece non trova
+		// nulla e non lo dice, quindi lì il trattino lo rifiutiamo noi.
+		base := t
+		if i := strings.IndexByte(t, '-'); i >= 0 {
+			base = t[:i]
+			check := t[i+1:]
+			if len(check) != 1 || check[0] < '0' || check[0] > '9' {
+				return fmt.Errorf("%s: dopo il trattino serve la sola cifra di controllo (es. 30213000-5), non %q", flag, t)
+			}
+			if len(base) != 8 {
+				return fmt.Errorf("%s: la cifra di controllo vale solo col codice completo a 8 cifre (es. 30213000-5); con un prefisso come %q il servizio non restituisce nulla", flag, t)
 			}
 		}
-		if len(t) < 2 || len(t) > 8 {
-			return fmt.Errorf("--cpv: ogni valore deve avere da 2 a 8 cifre (%q ne ha %d)", t, len(t))
+		for _, r := range base {
+			if r < '0' || r > '9' {
+				return fmt.Errorf("%s accetta solo codici numerici (%q non lo è); per cercare una descrizione usa 'cpv search'", flag, t)
+			}
+		}
+		if len(base) < minCifre || len(base) > 8 {
+			return fmt.Errorf("%s: ogni valore deve avere da %d a 8 cifre (%q ne ha %d)", flag, minCifre, t, len(base))
 		}
 	}
 	return nil
@@ -299,24 +318,48 @@ func soloCodiciCompleti(cpv string) bool {
 	if strings.TrimSpace(cpv) == "" {
 		return false
 	}
-	for _, tok := range strings.Split(cpv, ",") {
-		if t := strings.TrimSpace(tok); t != "" && len(t) != 8 {
+	for _, t := range codiciCPV(cpv) {
+		if len(t) != 8 {
 			return false
 		}
 	}
 	return true
 }
 
-// cpvDeiLotti raccoglie i CPV dei lotti di un avviso, come li espone l'API
-// (a volte descrizione, a volte codice). Serve a mostrare in tabella perché un
-// avviso è stato restituito: il portale questa informazione non la dà.
+// codiciCPV divide un filtro CPV sulle virgole e toglie a ogni valore la
+// cifra di controllo (30213000-5 -> 30213000): il servizio la ignora, e i
+// CPV delle righe normalizzati non la portano.
+func codiciCPV(cpv string) []string {
+	var out []string
+	for _, tok := range strings.Split(cpv, ",") {
+		t := strings.TrimSpace(tok)
+		if i := strings.IndexByte(t, '-'); i >= 0 {
+			t = t[:i]
+		}
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// cpvDeiLotti raccoglie i CPV dei lotti di un avviso. L'API li espone in forme
+// diverse (descrizione, codice, e nel dettaglio "codice_descrizione"): qui si
+// mostra il codice quando si ricava dal vocabolario, altrimenti il valore così
+// com'è. Serve a vedere in tabella perché un avviso è stato restituito.
 func cpvDeiLotti(item map[string]any) []string {
 	var out []string
 	seen := map[string]bool{}
 	for _, sec := range asArr(templateOf(item)["sections"]) {
 		sm := asMap(sec)
 		for _, it := range asArr(sm["items"]) {
-			v := strings.TrimSpace(fmt.Sprint(asMap(it)["cpv"]))
+			raw := asMap(it)["cpv"]
+			v := strings.TrimSpace(fmt.Sprint(raw))
+			if code, desc, ok := cpvdata.NormalizeCPV(raw); ok && code != "" {
+				v = code
+			} else if ok && desc != "" {
+				v = desc
+			}
 			if v == "" || v == "<nil>" || seen[v] {
 				continue
 			}
