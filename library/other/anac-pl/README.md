@@ -125,6 +125,11 @@ ANAC pubblica le tipologiche della Piattaforma Contratti Pubblici nel repository
 - [codici CPV](https://github.com/anticorruzione/npa/blob/main/docs/modello-dati/tipologiche/CPV.json): 9.454 codici, con descrizione in italiano e in inglese. È l'elenco a cui rimanda la finestra informativa del campo CPV della ricerca avanzata, e il vocabolario incluso nella CLI (`cpv search`, `cpv get`) coincide con questo.
 - [categorie](https://github.com/anticorruzione/npa/blob/main/docs/modello-dati/tipologiche/categoria.json): le categorie di qualificazione dei lavori (OG, OS), le forniture di beni (FB) e di servizi (FS), e le stazioni appaltanti con sistema di qualificazione proprio (AA). Sono i valori di `cerca-avanzata --categorie`. Nel file compaiono anche `999` (categoria non definita), che la ricerca non propone, e `OS 29` due volte: il servizio ne espone 55, senza duplicati.
 
+Dallo stesso repository la CLI prende altre due cose, che funzionano senza rete:
+
+- [codici scheda](https://github.com/anticorruzione/npa/blob/main/docs/modello-dati/tipologiche/codiceScheda.json): ogni avviso porta un `codiceScheda` (AD3, A1_29, P1_16...) che indica il modello di pubblicazione e la norma di riferimento. `tipologie schede AD3` lo descrive, `tipologie schede` li elenca tutti e 150. Non sono i valori da passare a `--scheda`, che vuole il numero template di `tipologie list`.
+- [algoritmo di validazione del CIG](https://github.com/anticorruzione/npa/blob/main/docs/Algoritmo%20validazione%20CIG/algoritmoValidazioneCIG.md): `cig check B7E26B1DC7` verifica struttura e cifra di controllo per le tre famiglie (Simog, Simog seconda versione e PCP, SmartCIG). Un CIG trascritto male non dà errore nella ricerca, restituisce avvisi estranei: per questo `cerca --query` e `avvisi search --keywords` avvisano su stderr quando il testo ha la forma di un CIG ma non supera il controllo.
+
 ## Doppi invii: righe uguali con `id_avviso` diverso
 
 La piattaforma pubblica ciò che riceve, compresi gli avvisi che una stazione appaltante manda due volte a pochi secondi di distanza: due `idAvviso` distinti, stesso `idAppalto`, stessa scheda, contenuto identico. In `affidamenti` compaiono come righe uguali con `id_avviso` diverso. Non vengono fuse, perché sullo stesso CIG esistono anche avvisi diversi e legittimi (esito, rettifica, ripubblicazione, due notice TED per lo stesso accordo quadro). La chiave per riconoscere i doppi invii è `id_appalto` insieme a `cig`, `cf_aggiudicatario`, `importo` e `data`:
@@ -150,13 +155,15 @@ Ogni richiesta si presenta con un `User-Agent` che dichiara nome, versione e que
 
 La conseguenza pratica è che le scansioni lunghe sono lente per costruzione: `sync` di molte pagine va lanciato e lasciato lavorare. Per le analisi ripetute conviene sincronizzare una volta e poi interrogare lo store locale con `search-local` ed `export`, che non toccano la rete.
 
-## Tre avvertenze sui dati
+## Quattro avvertenze sui dati
 
 Il campo CPV di `cerca` non è un filtro sul codice ma un match testuale: restituisce anche avvisi con CPV estranei. Per selezionare davvero per codice serve `cerca-avanzata`, che usa l'endpoint della ricerca avanzata rilasciata in beta a luglio 2026. La CLI lo segnala su stderr quando usi `cerca --cpv`.
 
 Il numero di risultati dichiarato dal servizio, sugli aggregati, è una stima progressiva: cambia mentre sfogli le pagine e fra chiamate identiche. Va usato come ordine di grandezza, non come totale. I codici CPV completi a 8 cifre sono invece stabili.
 
 Il campo `titolo` dei metadati di un avviso è spesso `null`: su due campioni di 200 avvisi lo era in 122 e 118 casi, soprattutto sulle schede AD3 e A2_*. `descrizione` è invece sempre valorizzata, e quando ci sono entrambi i due testi possono essere diversi. Per l'oggetto dell'avviso conviene leggere `descrizione`.
+
+Ogni risultato della ricerca ha i campi `oscurato` e `noteOscuramento`. Secondo la [guida di ANAC sull'oscuramento](https://github.com/anticorruzione/npa/blob/main/docs/Guide_Utente/Oscuramento_Avviso_PVL_e_Adeguamento_PCP.md), la piattaforma può oscurare un avviso che non supera i suoi controlli ed escludere gli avvisi oscurati dai risultati di ricerca; la stessa guida dice che i controlli sono per ora disattivati. Nei campioni presi a settembre 2026 `oscurato` era sempre `false`. Se un avviso noto non compare nella ricerca, l'oscuramento è una delle spiegazioni possibili.
 
 ## Funzioni esclusive
 
@@ -237,6 +244,11 @@ Avvisi e comunicazioni della piattaforma
 Tassonomia delle tipologie di avviso (categorie, tipologie e codici scheda)
 
 - **`anac-pl-pp-cli tipologie`** - Mappa di categorie, tipologie e codici scheda usati per filtrare la ricerca
+- **`anac-pl-pp-cli tipologie schede`** - Descrive i codici scheda degli avvisi (AD3, A1_29, P1_16), offline
+
+### cig
+
+- **`anac-pl-pp-cli cig check`** - Verifica struttura e cifra di controllo di uno o più CIG, offline
 
 
 ## Formati di output

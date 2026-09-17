@@ -51,6 +51,7 @@ func newAvvisiSearchCmd(flags *rootFlags) *cobra.Command {
 			}
 			flagCodiceScheda = scheda
 			warnOrdinamentoIgnorato(cmd.ErrOrStderr(), flagKeywords, flagSortField, flagSortDirection)
+			warnCIGNonValido(cmd.ErrOrStderr(), flagKeywords)
 			c, err := flags.newClient()
 			if err != nil {
 				return err

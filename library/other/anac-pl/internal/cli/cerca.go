@@ -86,6 +86,7 @@ Modalità (--mode):
 				params["sortDirection"] = d
 			}
 			warnOrdinamentoIgnorato(cmd.ErrOrStderr(), query, sortField, sortDir)
+			warnCIGNonValido(cmd.ErrOrStderr(), query)
 
 			// tipologia -> codiceScheda (template id)
 			if tipologia != "" {

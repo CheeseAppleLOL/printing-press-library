@@ -1,0 +1,26 @@
+{
+  "schema_version": 2,
+  "id": "anac-pl-npa-cig-schede",
+  "applied_at": "2026-09-16",
+  "base_run_id": "20260623-093040-ed91772a",
+  "base_printing_press_version": "4.17.0",
+  "summary": "Nuovi comandi offline dalle risorse di anticorruzione/npa: `cig check` (cifra di controllo del CIG per Simog, Simog v2/PCP e SmartCIG) e `tipologie schede` (descrizione dei 150 codici scheda da codiceScheda.json); avviso su stderr in `cerca --query` e `avvisi search --keywords` per un termine con la forma di un CIG che non supera il controllo, anche attaccato a punteggiatura (`CIG:B7E26B1DC8`, `(B7E26B1DC8),`); README e SKILL documentano anche `oscurato`/`noteOscuramento`.",
+  "reason": "Un CIG trascritto male non produce errori: la ricerca a testo libero restituisce avvisi estranei. I codici scheda (AD3, A1_29...) compaiono in ogni avviso ma il servizio non espone un elenco che li descriva. La guida ANAC sull'oscuramento dice che gli avvisi oscurati possono essere esclusi dalla ricerca. `cig check` esce con 0 e riporta l'esito nel campo `valido` quando il CIG ha una cifra di controllo errata, ed esce con 2 senza output solo se un argomento non ha la forma di un CIG: il bridge MCP scarta lo stdout di un comando che esce con errore, e con un'uscita diversa da 0 gli agenti avrebbero perso l'esito per singolo CIG.",
+  "files": [
+    "internal/cig/cig.go",
+    "internal/cig/cig_test.go",
+    "internal/schede/schede.go",
+    "internal/schede/schede_test.go",
+    "internal/schede/schede_it.tsv",
+    "internal/cli/cig.go",
+    "internal/cli/tipologie_schede.go",
+    "internal/cli/cig_test.go",
+    "internal/cli/root.go",
+    "internal/cli/cerca.go",
+    "internal/cli/avvisi_search.go",
+    "internal/cli/which.go",
+    "README.md",
+    "SKILL.md"
+  ],
+  "validated_outcome": "Algoritmo verificato su CIG reali delle tre famiglie (5527244A08 Simog, B057DC558A e B7E26B1DC7 PCP, Z94375BBCC SmartCIG, 1939 CIG presi dalla PVL tutti validi) e sulle loro versioni alterate, tutte respinte. Tutti i 18 codici scheda visti nei dati sono nell'elenco ANAC. Dal vivo: `cerca --query B7E26B1DC8` stampa l'avviso, `B7E26B1DC7` e `microsoft office` no."
+}
