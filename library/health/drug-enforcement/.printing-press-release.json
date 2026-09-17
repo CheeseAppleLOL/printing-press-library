@@ -2,17 +2,17 @@
   "schema_version": 1,
   "slug": "drug-enforcement",
   "cli_name": "drug-enforcement-pp-cli",
-  "version": "2026.9.3",
-  "released_at": "2026-09-11T09:22:21Z",
-  "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e",
+  "version": "2026.9.4",
+  "released_at": "2026-09-17T09:08:40Z",
+  "source_commit": "3745d4f57f661c1c7fdbd07b1dbc1bd4a29093dd",
   "printing_press_version": "4.25.0",
   "run_id": "20260707-200719-bf61d987",
   "changes": [
     {
-      "title": "fix: fail closed on ambiguous fleet write retries",
-      "pr": 1978,
-      "url": "https://github.com/mvanhorn/printing-press-library/pull/1978",
-      "commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+      "title": "test(drug-enforcement): guard code_info decode into Lots/Expiry",
+      "pr": 2009,
+      "url": "https://github.com/mvanhorn/printing-press-library/pull/2009",
+      "commit": "3745d4f57f661c1c7fdbd07b1dbc1bd4a29093dd"
     }
   ]
 }
