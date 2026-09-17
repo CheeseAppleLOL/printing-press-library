@@ -94,6 +94,11 @@ These capabilities aren't available in any other tool for this API.
 **tipologie** — Tassonomia delle tipologie di avviso (categorie, tipologie e codici scheda)
 
 - `anac-pl-pp-cli tipologie` — Mappa di categorie, tipologie e codici scheda usati per filtrare la ricerca
+- `anac-pl-pp-cli tipologie schede` — Describes notice scheda codes (AD3, A1_29, P1_16...) from ANAC's codiceScheda.json, offline; unknown code exits 3
+
+**cig** — CIG tools
+
+- `anac-pl-pp-cli cig check <cig>...` — Offline structure and check-digit validation (Simog, Simog v2/PCP, SmartCIG) with ANAC's published algorithm; a wrong check digit is a result (exit 0, check `valido` per code, `jq -e 'all(.valido)'` in scripts); an argument that is not CIG-shaped (length ≠ 10, bad first char) is a usage error, exit 2
 
 
 ### Finding the right command
@@ -118,6 +123,8 @@ These come from how the ANAC search service behaves, not from the CLI. Check the
 - **`cerca --cpv` is a text match**, not a code filter: use `cerca-avanzata --cpv` to select by code. That flag also takes the official form with the check digit (`30213000-5`); the service ignores the check digit, and on a prefix it returns nothing, so the CLI refuses `302-5`.
 - **The declared result count is an estimate** that changes across pages and identical calls.
 - **`titolo` is often `null`** (about 60% of notices, mostly AD3 and A2_* schede). `descrizione` is always set: read the notice subject from `templates[].template.metadata.descrizione`.
+- **A mistyped CIG returns unrelated notices, not an error.** Run `cig check <CIG>` before searching by CIG; `cerca --query` and `avvisi search --keywords` warn on stderr when a CIG-shaped term fails the check digit.
+- **Obscured notices may be missing.** Results carry `oscurato`/`noteOscuramento`; ANAC's guide says obscured notices can be excluded from search, and that the validation checks that trigger obscuring are currently disabled (always `false` in September 2026 samples).
 
 ## Recipes
 
