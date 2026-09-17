@@ -2,6 +2,10 @@
 
 This file is maintained by printing-press-library release automation. Do not hand-edit release sections in normal PRs.
 
+## 2026.9.5 - 2026-09-17
+
+- feat(anac-pl): offline CIG check-digit validation and scheda code descriptions (#2006).
+
 ## 2026.9.4 - 2026-09-16
 
 - fix(anac-pl): accept the CPV check digit in the advanced search (#2005).

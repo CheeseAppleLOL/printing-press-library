@@ -2,6 +2,10 @@
 
 This file is maintained by printing-press-library release automation. Do not hand-edit release sections in normal PRs.
 
+## 2026.9.4 - 2026-09-17
+
+- test(scientific-consensus): guard every retraction marker rule (#2008).
+
 ## 2026.9.3 - 2026-09-12
 
 - scientific-consensus: cap the abstract the design heuristics read (#1987).

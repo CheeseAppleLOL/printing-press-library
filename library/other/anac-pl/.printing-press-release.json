@@ -2,17 +2,17 @@
   "schema_version": 1,
   "slug": "anac-pl",
   "cli_name": "anac-pl-pp-cli",
-  "version": "2026.9.4",
-  "released_at": "2026-09-16T09:13:54Z",
-  "source_commit": "f71f3bb65521febbe6a8845989d12a4dcecb7963",
+  "version": "2026.9.5",
+  "released_at": "2026-09-17T09:10:25Z",
+  "source_commit": "916e5f8ed29a3af74a7c4378cd2e380536b01d53",
   "printing_press_version": "4.17.0",
   "run_id": "20260623-093040-ed91772a",
   "changes": [
     {
-      "title": "fix(anac-pl): accept the CPV check digit in the advanced search",
-      "pr": 2005,
-      "url": "https://github.com/mvanhorn/printing-press-library/pull/2005",
-      "commit": "f71f3bb65521febbe6a8845989d12a4dcecb7963"
+      "title": "feat(anac-pl): offline CIG check-digit validation and scheda code descriptions",
+      "pr": 2006,
+      "url": "https://github.com/mvanhorn/printing-press-library/pull/2006",
+      "commit": "916e5f8ed29a3af74a7c4378cd2e380536b01d53"
     }
   ]
 }

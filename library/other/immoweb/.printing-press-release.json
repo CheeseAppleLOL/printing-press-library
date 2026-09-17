@@ -2,17 +2,17 @@
   "schema_version": 1,
   "slug": "immoweb",
   "cli_name": "immoweb-pp-cli",
-  "version": "2026.9.1",
-  "released_at": "2026-09-14T10:40:46Z",
-  "source_commit": "96526ef8f6cca720440f8595aa308f2cd2258aa1",
+  "version": "2026.9.2",
+  "released_at": "2026-09-17T09:10:25Z",
+  "source_commit": "3846f42b7ce2189b75f830d4db6a226d4e28aca0",
   "printing_press_version": "4.32.1",
   "run_id": "20260912-183347-d9a891d6",
   "changes": [
     {
-      "title": "feat(immoweb): add immoweb",
-      "pr": 1995,
-      "url": "https://github.com/mvanhorn/printing-press-library/pull/1995",
-      "commit": "96526ef8f6cca720440f8595aa308f2cd2258aa1"
+      "title": "fix(immoweb): apply comma-joined list filters (epcScores)",
+      "pr": 2007,
+      "url": "https://github.com/mvanhorn/printing-press-library/pull/2007",
+      "commit": "3846f42b7ce2189b75f830d4db6a226d4e28aca0"
     }
   ]
 }
