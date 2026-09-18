@@ -1544,9 +1544,9 @@
       "path": "library/other/anac-pl",
       "release": {
         "cli_name": "anac-pl-pp-cli",
-        "version": "2026.9.2",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.5",
+        "released_at": "2026-09-17T09:10:25Z",
+        "source_commit": "916e5f8ed29a3af74a7c4378cd2e380536b01d53"
       },
       "printer": "aborruso",
       "printer_name": "aborruso",
@@ -2094,9 +2094,9 @@
       "path": "library/other/ars-sicilia",
       "release": {
         "cli_name": "ars-sicilia-pp-cli",
-        "version": "2026.9.5",
-        "released_at": "2026-09-13T09:15:33Z",
-        "source_commit": "f4d158779a84d644d0bad1e48df81282fb34f72a"
+        "version": "2026.9.6",
+        "released_at": "2026-09-14T10:28:55Z",
+        "source_commit": "634d6c57c3cfed78e810be7ac58a9702f6314f16"
       },
       "printer": "aborruso",
       "printer_name": "aborruso",
@@ -3466,9 +3466,9 @@
       "path": "library/productivity/bonusly",
       "release": {
         "cli_name": "bonusly-pp-cli",
-        "version": "2026.9.2",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.3",
+        "released_at": "2026-09-18T09:08:45Z",
+        "source_commit": "252cfd068f6c489bd49248f651cc2beb30e44139"
       },
       "printer": "enlewof",
       "printer_name": "Allen Lew",
@@ -4693,9 +4693,9 @@
       "path": "library/health/clinical-trials",
       "release": {
         "cli_name": "clinical-trials-pp-cli",
-        "version": "2026.9.7",
-        "released_at": "2026-09-13T09:12:20Z",
-        "source_commit": "feed82f71e80ec555a7bc621a96a448e9561bb86"
+        "version": "2026.9.12",
+        "released_at": "2026-09-18T09:07:42Z",
+        "source_commit": "1c085105faf876463567053451051305cf40cf56"
       },
       "printer": "laci141",
       "printer_name": "laci141",
@@ -5135,9 +5135,9 @@
       "path": "library/productivity/concur",
       "release": {
         "cli_name": "concur-pp-cli",
-        "version": "2026.9.3",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.4",
+        "released_at": "2026-09-16T09:11:56Z",
+        "source_commit": "0a5a8f0aa73cca78e106b3efc28aabbb04dd479a"
       },
       "printer": "enlewof",
       "printer_name": "Allen Lew",
@@ -7077,9 +7077,9 @@
       "path": "library/health/drug-enforcement",
       "release": {
         "cli_name": "drug-enforcement-pp-cli",
-        "version": "2026.9.3",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.4",
+        "released_at": "2026-09-17T09:08:40Z",
+        "source_commit": "3745d4f57f661c1c7fdbd07b1dbc1bd4a29093dd"
       },
       "printer": "laci141",
       "printer_name": "laci141",
@@ -12670,6 +12670,12 @@
         "Estimates gross rental yield for a sale listing or a whole commune from comparable rents, and refuses when there are too few comparables. Pulls missing areas on first use (--no-pull to stay offline)."
       ],
       "path": "library/other/immoweb",
+      "release": {
+        "cli_name": "immoweb-pp-cli",
+        "version": "2026.9.2",
+        "released_at": "2026-09-17T09:10:25Z",
+        "source_commit": "3846f42b7ce2189b75f830d4db6a226d4e28aca0"
+      },
       "printer": "sambassio",
       "printer_name": "sambassio",
       "creator": {
@@ -14465,9 +14471,9 @@
       "path": "library/project-management/linear",
       "release": {
         "cli_name": "linear-pp-cli",
-        "version": "2026.9.1",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.2",
+        "released_at": "2026-09-14T10:40:46Z",
+        "source_commit": "69ca0e26f066cf834ad3d413840ff8cdbfab44e6"
       },
       "printer": "mvanhorn",
       "printer_name": "Matt Van Horn",
@@ -17455,6 +17461,58 @@
         "auth_type": "cookie",
         "env_vars": [],
         "mcp_ready": "partial",
+        "spec_format": "internal"
+      }
+    },
+    {
+      "name": "openbdap",
+      "category": "other",
+      "api": "OpenBDAP",
+      "description": "Il catalogo Open Data della Ragioneria Generale dello Stato da terminale: ricerca offline, righe filtrate per nome di colonna leggibile e opere pubbliche cercabili per CUP, CIG o codice fiscale.",
+      "search_terms": [
+        "openbdap",
+        "openbdap-pp-cli",
+        "Il catalogo Open Data della Ragioneria Generale dello Stato da terminale: ricerca offline, righe filtrate per nome di colonna leggibile e opere pubbliche cercabili per CUP, CIG o codice fiscale.",
+        "Dossier di progetto",
+        "dossier",
+        "Il quadro completo di un'opera pubblica a partire dal CUP: progetto, pagamenti, gare, partecipanti, piano dei costi e soggetti titolari.",
+        "Serie storiche del catalogo",
+        "serie",
+        "Le annualita', le mensilita' e le regioni disponibili di una stessa serie di dataset.",
+        "Opere di un ente",
+        "opere",
+        "Le opere pubbliche in capo a un ente, a partire dal suo codice fiscale, con il totale reale.",
+        "Novita' del catalogo",
+        "novita",
+        "I dataset il cui ultimo aggiornamento cade nella finestra indicata.",
+        "Indice dei campi",
+        "campi",
+        "In quali dataset esiste un campo, con l'identificativo pronto da usare nei filtri.",
+        "Mappa della famiglia MOP",
+        "mop",
+        "Quale dataset MOP interrogare per ogni regione e ruolo, con il relativo identificativo OData.",
+        "Ricerca per CIG",
+        "cig",
+        "La gara e i partecipanti a partire dal codice CIG."
+      ],
+      "path": "library/other/openbdap",
+      "printer": "aborruso",
+      "printer_name": "aborruso",
+      "creator": {
+        "handle": "aborruso",
+        "name": "aborruso"
+      },
+      "mcp": {
+        "binary": "openbdap-pp-mcp",
+        "transports": [
+          "stdio",
+          "http"
+        ],
+        "tool_count": 13,
+        "public_tool_count": 13,
+        "auth_type": "none",
+        "env_vars": [],
+        "mcp_ready": "full",
         "spec_format": "internal"
       }
     },
@@ -22138,9 +22196,9 @@
       "path": "library/other/scientific-consensus",
       "release": {
         "cli_name": "scientific-consensus-pp-cli",
-        "version": "2026.9.3",
-        "released_at": "2026-09-12T09:13:58Z",
-        "source_commit": "e7812139ed2649d0a6d1c60f010d6ede485f9adc"
+        "version": "2026.9.4",
+        "released_at": "2026-09-17T09:10:25Z",
+        "source_commit": "e7832a9f92fbd1f15cef8f7fe70458cd06dd8706"
       },
       "printer": "laci141",
       "printer_name": "laci141",
@@ -27170,9 +27228,9 @@
       "path": "library/devices/unifi",
       "release": {
         "cli_name": "unifi-pp-cli",
-        "version": "2026.9.1",
-        "released_at": "2026-09-11T09:22:21Z",
-        "source_commit": "81f5764eda401077520268afe74913c0f21f5b7e"
+        "version": "2026.9.2",
+        "released_at": "2026-09-16T09:10:37Z",
+        "source_commit": "fe77f6282b234da51fff26dec5ae56c6d5fb9d0e"
       },
       "printer": "phoenix-server",
       "printer_name": "Ricardo Cabral",
