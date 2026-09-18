@@ -5194,19 +5194,31 @@
         "conduyt-crm",
         "Conduyt CRM",
         "conduyt-crm-pp-cli",
-        "AI-native CRM for the terminal — manage contacts, deals, pipelines, automations, email sequences, SMS drip campaigns, invoices, and 70+ resource types. Local SQLite sync, compound insight queries (pipeline health, deal velocity, email stats), and MCP code-orchestration for agent integration.",
-        "Contact Trends",
-        "contact-trends",
-        "Analyze contact creation patterns by date and source using local SQLite store",
-        "Deal Velocity",
-        "deal-velocity",
-        "Analyze average deal cycle time, win rate, and per-stage duration metrics",
-        "Pipeline Health",
-        "pipeline-health",
-        "Pipeline health check with stale deal detection, stage distribution, and bottleneck scoring",
-        "Email Stats",
-        "email-stats",
-        "Email performance analytics — open rates, click rates, reply rates, and per-template breakdown"
+        "Every Conduyt endpoint as a command, plus send-safety, import forensics, report deltas and dialer coverage no other Conduyt surface has.",
+        "Send-safety check",
+        "send-check",
+        "A go/no-go verdict for a send list before any SMS or drip: missing phones, unverified line types, invalid numbers and DNC hits in one table.",
+        "Import delivery blame",
+        "imports blame",
+        "For one import job: who got the SMS, who was skipped and why, grouped by reason, including queued and exhausted side effects.",
+        "Import watcher",
+        "imports watch",
+        "Blocks until an import job reaches a terminal state, then prints the created/updated/skipped/error recap with typed exit codes.",
+        "Verification cost estimate",
+        "contacts verify-line-type",
+        "Counts the unverified numbers in scope from the local store and shows the tenant-paid Twilio exposure before the paid verification loop runs.",
+        "Targets scorecard",
+        "reports scorecard",
+        "Target versus actual per user and metric with attainment percent and pace to the end of the period.",
+        "Period-over-period compare",
+        "reports compare",
+        "Any core report called for a window and the equal prior window, with prior, current, delta and delta percent on every numeric value.",
+        "Dial coverage",
+        "dialer coverage",
+        "Priorities in dial order with queue depth per priority and the count of available agents; empty priorities are listed under empty_priorities with a warning (exit 0).",
+        "Operating-hours audit",
+        "automations hours-audit",
+        "Every Send SMS, Send Email and Assign step across synced automations, listed with or without an operating-hours window."
       ],
       "path": "library/sales-and-crm/conduyt-crm",
       "release": {
@@ -5227,11 +5239,12 @@
           "stdio",
           "http"
         ],
-        "tool_count": 321,
-        "public_tool_count": 0,
-        "auth_type": "bearer",
+        "tool_count": 829,
+        "public_tool_count": 21,
+        "auth_type": "bearer_token",
         "env_vars": [
-          "CONDUYT_CRM_TOKEN"
+          "CONDUYT_API_KEY",
+          "CONDUYT_BEARER_AUTH"
         ],
         "mcp_ready": "full",
         "spec_format": "openapi3"
@@ -17496,6 +17509,12 @@
         "La gara e i partecipanti a partire dal codice CIG."
       ],
       "path": "library/other/openbdap",
+      "release": {
+        "cli_name": "openbdap-pp-cli",
+        "version": "2026.9.1",
+        "released_at": "2026-09-18T09:12:36Z",
+        "source_commit": "c64f83a6caceeb8253ccbb80fb3f1680dd805a31"
+      },
       "printer": "aborruso",
       "printer_name": "aborruso",
       "creator": {
