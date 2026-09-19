@@ -3,7 +3,10 @@
 package cli
 
 import (
+	"context"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -15,6 +18,7 @@ func newListingsSearchCmd(flags *rootFlags) *cobra.Command {
 	lf := &locFlags{}
 	var query string
 	var limit int
+	var postedWithin string
 	var priceMin, priceMax float64
 	var firmOnly, localOnly bool
 
@@ -50,10 +54,42 @@ price-check, deals, and new-since have data.`, "\n"),
 			opts.PriceMax = priceMax
 			opts.FirmOnly = firmOnly
 			opts.LocalOnly = localOnly
-			listings, err := searchAndRecord(cmd, flags, lf, query, opts)
-			if err != nil {
-				return err
+			if postedWithin == "" {
+				listings, err := searchAndRecord(cmd, flags, lf, query, opts)
+				if err != nil {
+					return err
+				}
+				return printJSONFiltered(cmd.OutOrStdout(), listings, flags)
 			}
+
+			_, cutoff, err := postedWithinCutoff(postedWithin)
+			if err != nil {
+				return usageErr(err)
+			}
+
+			searchOpts := opts
+			searchOpts.Limit = 0
+
+			client := newOfferupClient(flags)
+			candidates, err := client.Search(cmd.Context(), query, searchOpts)
+			if err != nil {
+				return classifyOfferupError(err)
+			}
+
+			listings, err := filterListingsByPostDate(cmd.Context(), client, candidates, cutoff)
+			if err != nil {
+				return classifyOfferupError(err)
+			}
+
+			if limit > 0 && len(listings) > limit {
+				listings = listings[:limit]
+			}
+
+			if st, err := openOfferupStore(); err == nil {
+				defer st.Close()
+				_, _ = st.RecordSearch(lf.storeKey(query), listings)
+			}
+
 			return printJSONFiltered(cmd.OutOrStdout(), listings, flags)
 		},
 	}
@@ -65,9 +101,54 @@ price-check, deals, and new-since have data.`, "\n"),
 	cmd.Flags().StringVar(&lf.category, "category", "", "OfferUp category id (cid) to scope the search")
 	cmd.Flags().StringVar(&query, "query", "", "Keyword to search for (or pass as a positional argument)")
 	cmd.Flags().IntVar(&limit, "limit", 0, "Maximum listings to return (0 returns all on the page)")
+	cmd.Flags().StringVar(&postedWithin, "posted-within", "", "Only include listings posted within this duration (for example: 7d, 24h, 1w)")
 	cmd.Flags().Float64Var(&priceMin, "price-min", 0, "Only listings at or above this price")
 	cmd.Flags().Float64Var(&priceMax, "price-max", 0, "Only listings at or below this price")
 	cmd.Flags().BoolVar(&firmOnly, "firm", false, "Only listings with a firm (non-negotiable) price")
 	cmd.Flags().BoolVar(&localOnly, "local", false, "Only listings offering local pickup")
 	return cmd
+}
+
+func postedWithinCutoff(value string) (time.Duration, time.Time, error) {
+	d, err := cliutil.ParseDurationLoose(value)
+	if err != nil {
+		return 0, time.Time{}, fmt.Errorf("invalid --posted-within %q: %w", value, err)
+	}
+	if d <= 0 {
+		return 0, time.Time{}, fmt.Errorf("--posted-within must be greater than zero")
+	}
+	return d, time.Now().Add(-d), nil
+}
+
+func filterListingsByPostDate(
+	ctx context.Context,
+	client *offerup.Client,
+	listings []offerup.Listing,
+	cutoff time.Time,
+) ([]offerup.Listing, error) {
+	out := make([]offerup.Listing, 0, len(listings))
+
+	for _, listing := range listings {
+		detail, err := client.GetItem(ctx, listing.ListingID)
+		if err != nil {
+			return nil, fmt.Errorf("fetch listing %s for posting-date filter: %w", listing.ListingID, err)
+		}
+
+		if detail == nil || detail.PostDate == "" {
+			continue
+		}
+
+		postDate, err := time.Parse(time.RFC3339Nano, detail.PostDate)
+		if err != nil {
+			continue
+		}
+
+		if postDate.Before(cutoff) {
+			continue
+		}
+
+		out = append(out, detail.Listing)
+	}
+
+	return out, nil
 }

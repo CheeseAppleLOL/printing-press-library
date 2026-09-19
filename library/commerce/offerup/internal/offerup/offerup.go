@@ -51,6 +51,7 @@ var (
 type Listing struct {
 	ListingID     string   `json:"listingId"`
 	Title         string   `json:"title"`
+	PostDate      string   `json:"postDate,omitempty"`
 	Price         float64  `json:"price"`
 	PriceText     string   `json:"priceText"`
 	LocationName  string   `json:"locationName"`
@@ -339,6 +340,7 @@ func listingFromMap(raw map[string]any, baseURL string) Listing {
 	l := Listing{
 		ListingID:     str(raw["listingId"]),
 		Title:         cliutil.CleanText(str(raw["title"])),
+		PostDate:      str(raw["postDate"]),
 		PriceText:     str(raw["price"]),
 		Price:         toPrice(raw["price"]),
 		LocationName:  str(raw["locationName"]),

@@ -33,6 +33,7 @@ func TestListingFromMap(t *testing.T) {
 	raw := map[string]any{
 		"listingId":     "abc-123",
 		"title":         "iPhone 13 &amp; case",
+		"postDate":      "2026-08-24T02:14:50.164Z",
 		"price":         "250",
 		"locationName":  "Seattle, WA",
 		"conditionText": "Like New",
@@ -43,6 +44,7 @@ func TestListingFromMap(t *testing.T) {
 	l := listingFromMap(raw, "https://offerup.com")
 	assert.Equal(t, "abc-123", l.ListingID)
 	assert.Equal(t, "iPhone 13 & case", l.Title) // HTML entity decoded by CleanText
+	assert.Equal(t, "2026-08-24T02:14:50.164Z", l.PostDate)
 	assert.Equal(t, 250.0, l.Price)
 	assert.Equal(t, "Seattle, WA", l.LocationName)
 	assert.True(t, l.IsFirmPrice)
